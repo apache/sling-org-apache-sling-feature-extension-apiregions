@@ -44,6 +44,8 @@ import org.apache.sling.feature.Extensions;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.analyser.task.AnalyserTask;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
+import org.apache.sling.feature.extension.apiregions.api.ApiExport;
+import org.apache.sling.feature.extension.apiregions.api.ApiRegion;
 import org.apache.sling.feature.extension.apiregions.api.ApiRegions;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.scanner.PackageInfo;
@@ -223,9 +225,24 @@ public class CheckApiRegionsBundleExportsImports implements AnalyserTask {
                                     Set<String> imRegions =
                                             getBundleRegions(info, bundleToOriginalFeatures, featureToOriginalRegions);
 
+
+                                    // Check exports of the importing regions to consider inherited exports
+                                    for (String imRegion : imRegions) {
+                                        ApiRegion region = apiRegions.getRegionByName(
+                                            imRegion);
+                                        for (ApiExport export : region.listAllExports()) {
+                                            if (export.getName().equals(
+                                                pck.getName())) {
+                                                exRegions.add(imRegion);
+                                            }
+                                        }
+                                    }
+                                    
                                     // Record the exporting and importing regions for diagnostics
                                     exportingRegions.addAll(exRegions);
                                     importingRegions.addAll(imRegions);
+                                    
+                                    
 
                                     // Only keep the regions that also export the package
                                     imRegions.retainAll(exRegions);

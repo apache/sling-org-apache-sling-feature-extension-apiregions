@@ -327,6 +327,40 @@ public class CheckApiRegionsBundleExportsImportsTest {
         Mockito.verify(ctx, Mockito.never()).reportError(Mockito.anyString());
         Mockito.verify(ctx, Mockito.never()).reportWarning(Mockito.anyString());
     }
+    
+    @Test
+    /*
+     * Bundle 2 imports org.foo.b from bundle 1. Bundle 1 exports it in region1.
+     * Regions
+     */
+    public void testImportFromInheritedRegionSucceeds() throws Exception {
+        String exJson = "[{\"name\": \"region1\", \"exports\": [\"org.foo.b\"]},{\"name\": \"region2\", \"exports\": []}]";
+        
+        CheckApiRegionsBundleExportsImports t = new CheckApiRegionsBundleExportsImports();
+        
+        Feature f = new Feature(ArtifactId.fromMvnId("f:f:1"));
+        Extension ex = new Extension(ExtensionType.JSON, "api-regions", ExtensionState.OPTIONAL);
+        ex.setJSON(exJson);
+        f.getExtensions().add(ex);
+        
+
+        FeatureDescriptor fd = new FeatureDescriptorImpl(f);
+
+        fdAddBundle(fd, "g:b1:1", "test-bundle1.jar");
+        fdAddBundle(fd, "g:b2:1", "test-bundle2.jar");
+
+        AnalyserTaskContext ctx = Mockito.mock(AnalyserTaskContext.class);
+        Mockito.when(ctx.getFeature()).thenReturn(f);
+        Mockito.when(ctx.getFeatureDescriptor()).thenReturn(fd);
+        Mockito.when(ctx.getConfiguration()).thenReturn(
+                Collections.singletonMap("fileStorage",
+                        resourceRoot + "/origins/testImportFromInheritedRegionSucceeds"));
+        t.execute(ctx);
+
+        Mockito.verify(ctx, Mockito.never()).reportError(Mockito.anyString());
+        Mockito.verify(ctx, Mockito.never()).reportWarning(Mockito.anyString());
+        
+    }
 
     private void fdAddBundle(FeatureDescriptor fd, String id, String file) throws IOException {
         BundleDescriptor bd1 = new BundleDescriptorImpl(
