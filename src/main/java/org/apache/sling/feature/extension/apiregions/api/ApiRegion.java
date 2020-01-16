@@ -208,33 +208,20 @@ public class ApiRegion {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
             return true;
-        if (obj == null)
+        }
+        if (o == null || getClass() != o.getClass())
+        {
             return false;
-        if (getClass() != obj.getClass())
-            return false;
-        ApiRegion other = (ApiRegion) obj;
-        if (exports == null) {
-            if (other.exports != null)
-                return false;
-        } else if (!exports.equals(other.exports))
-            return false;
-        if (name == null) {
-            if (other.name != null)
-                return false;
-        } else if (!name.equals(other.name))
-            return false;
-        if (properties == null) {
-            if (other.properties != null)
-                return false;
-        } else if (!properties.equals(other.properties))
-            return false;
-
-        if (!origins.equals(other.origins))
-            return false;
-
-        return true;
+        }
+        ApiRegion region = (ApiRegion) o;
+        return exports.equals(region.exports) &&
+            origins.equals(region.origins) &&
+            properties.equals(region.properties) &&
+            Objects.equals(name, region.name);
     }
 }
