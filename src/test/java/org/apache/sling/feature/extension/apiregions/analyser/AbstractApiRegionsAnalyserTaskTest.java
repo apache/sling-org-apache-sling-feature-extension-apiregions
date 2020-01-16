@@ -16,13 +16,6 @@
  */
 package org.apache.sling.feature.extension.apiregions.analyser;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import java.io.StringReader;
 import java.net.URL;
 import java.util.Collections;
@@ -30,7 +23,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.jar.Manifest;
-
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonReader;
@@ -53,6 +45,12 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public abstract class AbstractApiRegionsAnalyserTaskTest<T extends AbstractApiRegionsAnalyserTask> {
 

@@ -18,11 +18,8 @@
  */
 package org.apache.sling.feature.extension.apiregions.analyser;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,6 +39,7 @@ import org.apache.sling.feature.scanner.impl.FeatureDescriptorImpl;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
+import static org.junit.Assert.assertEquals;
 
 public class CheckApiRegionsBundleExportsImportsTest {
     private static File resourceRoot;

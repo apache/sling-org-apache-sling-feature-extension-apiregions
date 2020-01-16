@@ -16,19 +16,11 @@
  */
 package org.apache.sling.feature.extension.apiregions;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.stream.Collectors;
-
 import javax.json.JsonArray;
 
-import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.Feature;

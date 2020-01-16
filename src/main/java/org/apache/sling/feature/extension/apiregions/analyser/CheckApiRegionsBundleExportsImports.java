@@ -26,7 +26,6 @@ import java.io.InputStream;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,7 +37,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import javax.json.JsonArray;
 
 import org.apache.sling.feature.ArtifactId;
@@ -50,7 +48,6 @@ import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
 import org.apache.sling.feature.extension.apiregions.api.ApiRegion;
 import org.apache.sling.feature.extension.apiregions.api.ApiRegions;
 import org.apache.sling.feature.scanner.BundleDescriptor;
-import org.apache.sling.feature.scanner.FeatureDescriptor;
 import org.apache.sling.feature.scanner.PackageInfo;
 import org.osgi.framework.Version;
 
@@ -328,7 +325,7 @@ public class CheckApiRegionsBundleExportsImports implements AnalyserTask {
             final List<BundleDescriptor> exportingBundles,
             final PackageInfo pck,
             final BundleDescriptor requestingBundle,
-            final ApiRegions apiRegions, boolean ignoreAPIRegions) throws IOException {
+            final ApiRegions apiRegions, boolean ignoreAPIRegions) {
         Set<String> rf = ignoreAPIRegions ? Collections.emptySet() : Stream.of(requestingBundle.getArtifact().getFeatureOrigins()).map(ArtifactId::toMvnId).collect(Collectors.toSet());
 
         final Set<String> requestingFeatures = rf;
