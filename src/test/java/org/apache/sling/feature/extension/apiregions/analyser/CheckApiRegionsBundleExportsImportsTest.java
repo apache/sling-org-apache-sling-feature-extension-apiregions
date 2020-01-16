@@ -132,7 +132,7 @@ public class CheckApiRegionsBundleExportsImportsTest {
      * different region, bundle 2 is in no region.
      */
     public void testImportExportWithRegionsMissing() throws Exception {
-        String exJson = "[{\"name\": \"something\", \"exports\": [\"org.foo.b\"],\"feature-origins\":\"f:f:1\"}]";
+        String exJson = "[{\"name\": \"something\", \"exports\": [\"org.foo.b\"],\"feature-origins\":[\"f:f:1\"]}]";
 
         CheckApiRegionsBundleExportsImports t = new CheckApiRegionsBundleExportsImports();
 
@@ -164,9 +164,9 @@ public class CheckApiRegionsBundleExportsImportsTest {
     public void testImportExportWithRegionMismatch() throws Exception {
         String exJson =
             "["
-                + "{\"name\": \"something\", \"exports\": [\"org.foo.b\"],\"feature-origins\":\"f:f:1\"},"
-                + "{\"name\": \"someotherthing\", \"exports\": [],\"feature-origins\":\"f:f:1\"},"
-                + "{\"name\": \"somethingelse\", \"exports\": [],\"feature-origins\":\"f:f2:1\"}"
+                + "{\"name\": \"something\", \"exports\": [\"org.foo.b\"],\"feature-origins\":[\"f:f:1\"]},"
+                + "{\"name\": \"someotherthing\", \"exports\": [],\"feature-origins\":[\"f:f:1\"]},"
+                + "{\"name\": \"somethingelse\", \"exports\": [],\"feature-origins\":[\"f:f2:1\"]}"
             + "]";
 
         CheckApiRegionsBundleExportsImports t = new CheckApiRegionsBundleExportsImports();
@@ -206,9 +206,9 @@ public class CheckApiRegionsBundleExportsImportsTest {
     public void testImportExportWithRegionMismatchIgnoreRegions() throws Exception {
         String exJson =
             "["
-                + "{\"name\": \"something\", \"exports\": [\"org.foo.b\"],\"feature-origins\":\"f:f:1\"},"
-                + "{\"name\": \"someotherthing\", \"exports\": [],\"feature-origins\":\"f:f:1\"},"
-                + "{\"name\": \"somethingelse\", \"exports\": [],\"feature-origins\":\"f:f2:1\"}"
+                + "{\"name\": \"something\", \"exports\": [\"org.foo.b\"],\"feature-origins\":[\"f:f:1\"]},"
+                + "{\"name\": \"someotherthing\", \"exports\": [],\"feature-origins\":[\"f:f:1\"]},"
+                + "{\"name\": \"somethingelse\", \"exports\": [],\"feature-origins\":[\"f:f2:1\"]}"
                 + "]";
 
         CheckApiRegionsBundleExportsImports t = new CheckApiRegionsBundleExportsImports();
@@ -243,11 +243,11 @@ public class CheckApiRegionsBundleExportsImportsTest {
      * all these bundles are in the same feature they can all see each other.
      */
     public void testImportFromOtherBundleInSameFeature() throws Exception {
-        String exJson = "[{\"name\": \"blah\",\"feature-origins\":\"f:f:2,f:f3:1\"}" +
-            ",{\"name\": \"something\",\"feature-origins\":\"f:f:1\"}" +
-            ",{\"name\": \"someotherthing\",\"feature-origins\":\"f:f:1\"}" +
-            ",{\"name\": \"abc\",\"feature-origins\":\"f:2:1\"}" +
-            ",{\"name\": \"xyz\",\"feature-origins\":\"f:f2:1\"}" +
+        String exJson = "[{\"name\": \"blah\",\"feature-origins\":[\"f:f:2:1\",\"f:f3:1\"]}" +
+            ",{\"name\": \"something\",\"feature-origins\":[\"f:f:1\"]}" +
+            ",{\"name\": \"someotherthing\",\"feature-origins\":[\"f:f:1\"]}" +
+            ",{\"name\": \"abc\",\"feature-origins\":[\"f:2:1\"]}" +
+            ",{\"name\": \"xyz\",\"feature-origins\":[\"f:f2:1\"]}" +
             "]"; // no exports
 
         CheckApiRegionsBundleExportsImports t = new CheckApiRegionsBundleExportsImports();
@@ -278,8 +278,8 @@ public class CheckApiRegionsBundleExportsImportsTest {
      * and bundle 2 imports it in the something region, so this succeeds.
      */
     public void testImportExportWithMatchingRegion() throws Exception {
-        String exJson = "[{\"name\": \"something\", \"exports\": [\"org.foo.b\"],\"feature-origins\":\"f:f:1,f:f2:1\"}" +
-            ",{\"name\": \"someotherthing\", \"exports\": [\"org.foo.b\"],\"feature-origins\":\"f:f:1\"}]";
+        String exJson = "[{\"name\": \"something\", \"exports\": [\"org.foo.b\"],\"feature-origins\":[\"f:f:1\",\"f:f2:1\"]}" +
+            ",{\"name\": \"someotherthing\", \"exports\": [\"org.foo.b\"],\"feature-origins\":[\"f:f:1\"]}]";
 
         CheckApiRegionsBundleExportsImports t = new CheckApiRegionsBundleExportsImports();
 
@@ -308,10 +308,10 @@ public class CheckApiRegionsBundleExportsImportsTest {
      * Bundle 2 is not explicitly part of the global region, but can still see it
      */
     public void testImportFromGlobalAlwaysSucceeds() throws Exception {
-        String exJson = "[{\"name\": \"global\", \"exports\": [\"org.foo.b\"],\"feature-origins\":\"f:f:1\"}" +
-            ",{\"name\": \"something\", \"exports\": [],\"feature-origins\":\"f:f2:1\"}" +
-            ",{\"name\": \"lalala\", \"exports\": [],\"feature-origins\":\"f:f:1\"}" +
-            ",{\"name\": \"someotherthing\", \"exports\": [],\"feature-origins\":\"f:f:1\"}]"
+        String exJson = "[{\"name\": \"global\", \"exports\": [\"org.foo.b\"],\"feature-origins\":[\"f:f:1\"]}" +
+            ",{\"name\": \"something\", \"exports\": [],\"feature-origins\":[\"f:f2:1\"]}" +
+            ",{\"name\": \"lalala\", \"exports\": [],\"feature-origins\":[\"f:f:1\"]}" +
+            ",{\"name\": \"someotherthing\", \"exports\": [],\"feature-origins\":[\"f:f:1\"]}]"
             ;
 
         CheckApiRegionsBundleExportsImports t = new CheckApiRegionsBundleExportsImports();

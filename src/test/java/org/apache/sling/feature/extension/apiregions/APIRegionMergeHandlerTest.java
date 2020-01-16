@@ -146,10 +146,10 @@ public class APIRegionMergeHandlerTest {
 
         Extension tgEx = tf.getExtensions().iterator().next();
 
-        String expectedJSON = "[{\"name\":\"global\",\"exports\":[\"a.b.c\",\"d.e.f\"],\"feature-origins\":\"y:s:2\"},"
-                + "{\"name\":\"deprecated\",\"exports\":[\"klm\",\"qrs\"],\"feature-origins\":\"y:s:2\"},"
-                + "{\"name\":\"internal\",\"exports\":[\"xyz\"],\"feature-origins\":\"y:s:2\"},"
-                + "{\"name\":\"forbidden\",\"exports\":[\"abc\",\"klm\"],\"feature-origins\":\"y:s:2\"}]";
+        String expectedJSON = "[{\"name\":\"global\",\"exports\":[\"a.b.c\",\"d.e.f\"],\"feature-origins\":[\"y:s:2\"]},"
+                + "{\"name\":\"deprecated\",\"exports\":[\"klm\",\"qrs\"],\"feature-origins\":[\"y:s:2\"]},"
+                + "{\"name\":\"internal\",\"exports\":[\"xyz\"],\"feature-origins\":[\"y:s:2\"]},"
+                + "{\"name\":\"forbidden\",\"exports\":[\"abc\",\"klm\"],\"feature-origins\":[\"y:s:2\"]}]";
         JsonReader er = Json.createReader(new StringReader(expectedJSON));
         JsonReader ar = Json.createReader(new StringReader(tgEx.getJSON()));
         JsonArray ea = er.readArray();

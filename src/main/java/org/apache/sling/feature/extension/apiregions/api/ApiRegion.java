@@ -17,6 +17,7 @@
 package org.apache.sling.feature.extension.apiregions.api;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -40,6 +41,8 @@ public class ApiRegion {
     public static final String GLOBAL = "global";
 
     private final List<ApiExport> exports = new ArrayList<>();
+
+    private final List<ArtifactId> origins = new ArrayList<>();
 
     private final Map<String, String> properties = new HashMap<>();
 
@@ -68,35 +71,13 @@ public class ApiRegion {
     }
 
     public ArtifactId[] getFeatureOrigins() {
-        String origins = this.getProperties().get(Artifact.KEY_FEATURE_ORIGINS);
-        Set<ArtifactId> originFeatures;
-        if (origins == null || origins.trim().isEmpty()) {
-            originFeatures = Collections.emptySet();
-        }
-        else {
-            originFeatures = new LinkedHashSet<>();
-            for (String origin : origins.split(",")) {
-                if (!origin.trim().isEmpty()) {
-                    originFeatures.add(ArtifactId.parse(origin));
-                }
-            }
-        }
-        return originFeatures.toArray(new ArtifactId[0]);
+        return origins.toArray(new ArtifactId[0]);
     }
 
     public void setFeatureOrigins(ArtifactId... featureOrigins) {
-        String origins;
-        if (featureOrigins != null && featureOrigins.length > 0) {
-            origins = Stream.of(featureOrigins).filter(Objects::nonNull).map(ArtifactId::toMvnId).distinct().collect(Collectors.joining(","));
-        }
-        else {
-            origins = "";
-        }
-        if (!origins.trim().isEmpty()) {
-            this.getProperties().put(Artifact.KEY_FEATURE_ORIGINS, origins);
-        }
-        else {
-            this.getProperties().remove(Artifact.KEY_FEATURE_ORIGINS);
+        origins.clear();
+        if (featureOrigins != null) {
+            origins.addAll(Stream.of(featureOrigins).filter(Objects::nonNull).distinct().collect(Collectors.toList()));
         }
     }
 
@@ -224,6 +205,7 @@ public class ApiRegion {
         int result = 1;
         result = prime * result + ((exports == null) ? 0 : exports.hashCode());
         result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + Arrays.hashCode(getFeatureOrigins());
         result = prime * result + ((properties == null) ? 0 : properties.hashCode());
         return result;
     }
@@ -252,6 +234,10 @@ public class ApiRegion {
                 return false;
         } else if (!properties.equals(other.properties))
             return false;
+
+        if (!origins.equals(other.origins))
+            return false;
+        
         return true;
     }
 }
