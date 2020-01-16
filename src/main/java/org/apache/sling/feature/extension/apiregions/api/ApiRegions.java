@@ -21,8 +21,10 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -153,6 +155,12 @@ public class ApiRegions {
         }
 
         return found;
+    }
+
+    public ApiRegion[] getRegionsByFeature(final ArtifactId featureId) {
+        return this.regions.stream().filter(
+            region -> Stream.of(region.getFeatureOrigins()).anyMatch(featureId::equals)
+        ).toArray(ApiRegion[]::new);
     }
 
     /**

@@ -20,8 +20,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.apache.sling.feature.Artifact;
+import org.apache.sling.feature.ArtifactId;
 
 /**
  * Describes an api region
@@ -57,6 +65,39 @@ public class ApiRegion {
      */
     public String getName() {
         return name;
+    }
+
+    public ArtifactId[] getFeatureOrigins() {
+        String origins = this.getProperties().get(Artifact.KEY_FEATURE_ORIGINS);
+        Set<ArtifactId> originFeatures;
+        if (origins == null || origins.trim().isEmpty()) {
+            originFeatures = Collections.emptySet();
+        }
+        else {
+            originFeatures = new LinkedHashSet<>();
+            for (String origin : origins.split(",")) {
+                if (!origin.trim().isEmpty()) {
+                    originFeatures.add(ArtifactId.parse(origin));
+                }
+            }
+        }
+        return originFeatures.toArray(new ArtifactId[0]);
+    }
+
+    public void setFeatureOrigins(ArtifactId... featureOrigins) {
+        String origins;
+        if (featureOrigins != null && featureOrigins.length > 0) {
+            origins = Stream.of(featureOrigins).filter(Objects::nonNull).map(ArtifactId::toMvnId).distinct().collect(Collectors.joining(","));
+        }
+        else {
+            origins = "";
+        }
+        if (!origins.trim().isEmpty()) {
+            this.getProperties().put(Artifact.KEY_FEATURE_ORIGINS, origins);
+        }
+        else {
+            this.getProperties().remove(Artifact.KEY_FEATURE_ORIGINS);
+        }
     }
 
     /**

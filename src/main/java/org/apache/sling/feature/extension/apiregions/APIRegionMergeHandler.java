@@ -21,6 +21,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -28,6 +29,7 @@ import java.util.stream.Collectors;
 import javax.json.JsonArray;
 
 import org.apache.sling.feature.Artifact;
+import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.builder.HandlerContext;
@@ -53,12 +55,8 @@ public class APIRegionMergeHandler implements MergeHandler {
         if (targetEx != null && !targetEx.getName().equals(ApiRegions.EXTENSION_NAME))
             return;
 
-        storeBundleOrigins(context, source, target);
-
         try {
             final ApiRegions srcRegions = ApiRegions.parse((JsonArray) sourceEx.getJSONStructure());
-
-            storeRegionOrigins(context, source, target, srcRegions);
 
             final ApiRegions targetRegions;
             if (targetEx != null) {
@@ -79,11 +77,17 @@ public class APIRegionMergeHandler implements MergeHandler {
                             targetRegion.add(srcExp);
                         }
                     }
+                    LinkedHashSet<ArtifactId> origins = new LinkedHashSet<>(Arrays.asList(targetRegion.getFeatureOrigins()));
+                    origins.add(source.getId());
+                    targetRegion.setFeatureOrigins(origins.toArray(new ArtifactId[0]));
                 }
             }
 
             // If there are any remaining regions in the src extension, process them now
             for (final ApiRegion r : srcRegions.listRegions()) {
+                LinkedHashSet<ArtifactId> origins = new LinkedHashSet<>(Arrays.asList(r.getFeatureOrigins()));
+                origins.add(source.getId());
+                r.setFeatureOrigins(origins.toArray(new ArtifactId[0]));
                 if (!targetRegions.add(r)) {
                     throw new IllegalStateException("Duplicate region " + r.getName());
                 }
@@ -93,64 +97,6 @@ public class APIRegionMergeHandler implements MergeHandler {
 
         } catch (final IOException e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    private void storeRegionOrigins(HandlerContext context, Feature source, Feature target, ApiRegions regions) {
-        try {
-            File f = AbstractHandler.getFeatureDataFile(context, target, "regionOrigins.properties");
-
-            Properties p = new Properties();
-            if (f.isFile()) {
-                try (FileInputStream fis = new FileInputStream(f)) {
-                    p.load(fis);
-                }
-            }
-
-            String fid = source.getId().toMvnId();
-            p.put(fid, regions.listRegions().stream().map(region -> region.getName()).collect(Collectors.joining(",")));
-
-            try (FileOutputStream fos = new FileOutputStream(f)) {
-                p.store(fos, "Mapping from feature ID to regions that the feature is a member of");
-            }
-        } catch (IOException e) {
-            throw new IllegalStateException("Problem storing region origin information", e);
-        }
-    }
-
-    private void storeBundleOrigins(HandlerContext context, Feature source, Feature target) {
-        try {
-            File f = AbstractHandler.getFeatureDataFile(context, target, "bundleOrigins.properties");
-
-            String featureId = source.getId().toMvnId();
-            Properties p = new Properties();
-            if (f.isFile()) {
-                try (FileInputStream fis = new FileInputStream(f)) {
-                    p.load(fis);
-                }
-            }
-
-            for (Artifact b : source.getBundles()) {
-                String bundleId = b.getId().toMvnId();
-                String org = p.getProperty(bundleId);
-                String newVal;
-                if (org != null) {
-                    List<String> l = Arrays.asList(org.split(","));
-                    if (!l.contains(featureId))
-                        newVal = org + "," + featureId;
-                    else
-                        newVal = org;
-                } else {
-                    newVal = featureId;
-                }
-                p.setProperty(bundleId, newVal);
-            }
-
-            try (FileOutputStream fos = new FileOutputStream(f)) {
-                p.store(fos, "Mapping from bundle artifact IDs to features that contained the bundle.");
-            }
-        } catch (IOException e) {
-            throw new IllegalStateException("Problem storing bundle origin information", e);
         }
     }
 }

@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -131,7 +132,7 @@ public class CheckApiRegionsBundleExportsImportsTest {
      * different region, bundle 2 is in no region.
      */
     public void testImportExportWithRegionsMissing() throws Exception {
-        String exJson = "[{\"name\": \"something\", \"exports\": [\"org.foo.b\"]}]";
+        String exJson = "[{\"name\": \"something\", \"exports\": [\"org.foo.b\"],\"feature-origins\":\"f:f:1\"}]";
 
         CheckApiRegionsBundleExportsImports t = new CheckApiRegionsBundleExportsImports();
 
@@ -142,15 +143,12 @@ public class CheckApiRegionsBundleExportsImportsTest {
 
         FeatureDescriptor fd = new FeatureDescriptorImpl(f);
 
-        fdAddBundle(fd, "g:b1:1", "test-bundle1.jar");
-        fdAddBundle(fd, "g:b2:1", "test-bundle2.jar");
+        fdAddBundle(fd, "g:b1:1", "test-bundle1.jar", f.getId());
+        fdAddBundle(fd, "g:b2:1", "test-bundle2.jar", ArtifactId.fromMvnId("f:f2:1"));
 
         AnalyserTaskContext ctx = Mockito.mock(AnalyserTaskContext.class);
         Mockito.when(ctx.getFeature()).thenReturn(f);
         Mockito.when(ctx.getFeatureDescriptor()).thenReturn(fd);
-        Mockito.when(ctx.getConfiguration()).thenReturn(
-                Collections.singletonMap("fileStorage",
-                        resourceRoot + "/origins/testImportExportWithRegionsMissing"));
         t.execute(ctx);
 
         Mockito.verify(ctx).reportError(Mockito.contains("org.foo.b"));
@@ -164,7 +162,12 @@ public class CheckApiRegionsBundleExportsImportsTest {
      * region, bundle 1 is in something region, and bundle 2 is in somethingelse region.
      */
     public void testImportExportWithRegionMismatch() throws Exception {
-        String exJson = "[{\"name\": \"something\", \"exports\": [\"org.foo.b\"]}]";
+        String exJson =
+            "["
+                + "{\"name\": \"something\", \"exports\": [\"org.foo.b\"],\"feature-origins\":\"f:f:1\"},"
+                + "{\"name\": \"someotherthing\", \"exports\": [],\"feature-origins\":\"f:f:1\"},"
+                + "{\"name\": \"somethingelse\", \"exports\": [],\"feature-origins\":\"f:f2:1\"}"
+            + "]";
 
         CheckApiRegionsBundleExportsImports t = new CheckApiRegionsBundleExportsImports();
 
@@ -175,11 +178,10 @@ public class CheckApiRegionsBundleExportsImportsTest {
 
         FeatureDescriptor fd = new FeatureDescriptorImpl(f);
 
-        fdAddBundle(fd, "g:b1:1", "test-bundle1.jar");
-        fdAddBundle(fd, "g:b2:1", "test-bundle2.jar");
+        fdAddBundle(fd, "g:b1:1", "test-bundle1.jar", fd.getFeature().getId());
+        fdAddBundle(fd, "g:b2:1", "test-bundle2.jar", ArtifactId.fromMvnId("f:f2:1"));
 
         Map<String, String> cfgMap = new HashMap<String, String>();
-        cfgMap.put("fileStorage", resourceRoot + "/origins/testImportExportWithRegionMismatch");
         cfgMap.put("ignoreAPIRegions", "false");
 
         AnalyserTaskContext ctx = Mockito.mock(AnalyserTaskContext.class);
@@ -202,7 +204,12 @@ public class CheckApiRegionsBundleExportsImportsTest {
      * However this should still pass as the analyzer is configured to ignore regions.
      */
     public void testImportExportWithRegionMismatchIgnoreRegions() throws Exception {
-        String exJson = "[{\"name\": \"something\", \"exports\": [\"org.foo.b\"]}]";
+        String exJson =
+            "["
+                + "{\"name\": \"something\", \"exports\": [\"org.foo.b\"],\"feature-origins\":\"f:f:1\"},"
+                + "{\"name\": \"someotherthing\", \"exports\": [],\"feature-origins\":\"f:f:1\"},"
+                + "{\"name\": \"somethingelse\", \"exports\": [],\"feature-origins\":\"f:f2:1\"}"
+                + "]";
 
         CheckApiRegionsBundleExportsImports t = new CheckApiRegionsBundleExportsImports();
 
@@ -213,11 +220,10 @@ public class CheckApiRegionsBundleExportsImportsTest {
 
         FeatureDescriptor fd = new FeatureDescriptorImpl(f);
 
-        fdAddBundle(fd, "g:b1:1", "test-bundle1.jar");
-        fdAddBundle(fd, "g:b2:1", "test-bundle2.jar");
+        fdAddBundle(fd, "g:b1:1", "test-bundle1.jar", fd.getFeature().getId());
+        fdAddBundle(fd, "g:b2:1", "test-bundle2.jar", ArtifactId.fromMvnId("f:f2:1"));
 
         Map<String, String> cfgMap = new HashMap<String, String>();
-        cfgMap.put("fileStorage", resourceRoot + "/origins/testImportExportWithRegionMismatch");
         cfgMap.put("ignoreAPIRegions", "true");
 
         AnalyserTaskContext ctx = Mockito.mock(AnalyserTaskContext.class);
@@ -237,7 +243,12 @@ public class CheckApiRegionsBundleExportsImportsTest {
      * all these bundles are in the same feature they can all see each other.
      */
     public void testImportFromOtherBundleInSameFeature() throws Exception {
-        String exJson = "[{\"name\": \"blah\"}]"; // no exports
+        String exJson = "[{\"name\": \"blah\",\"feature-origins\":\"f:f:2,f:f3:1\"}" +
+            ",{\"name\": \"something\",\"feature-origins\":\"f:f:1\"}" +
+            ",{\"name\": \"someotherthing\",\"feature-origins\":\"f:f:1\"}" +
+            ",{\"name\": \"abc\",\"feature-origins\":\"f:2:1\"}" +
+            ",{\"name\": \"xyz\",\"feature-origins\":\"f:f2:1\"}" +
+            "]"; // no exports
 
         CheckApiRegionsBundleExportsImports t = new CheckApiRegionsBundleExportsImports();
 
@@ -248,16 +259,13 @@ public class CheckApiRegionsBundleExportsImportsTest {
 
         FeatureDescriptor fd = new FeatureDescriptorImpl(f);
 
-        fdAddBundle(fd, "g:b1:1", "test-bundle1.jar");
-        fdAddBundle(fd, "g:b3:1", "test-bundle3.jar");
-        fdAddBundle(fd, "g:b4:1", "test-bundle4.jar");
+        fdAddBundle(fd, "g:b1:1", "test-bundle1.jar", ArtifactId.fromMvnId("f:f3:1"));
+        fdAddBundle(fd, "g:b3:1", "test-bundle3.jar", ArtifactId.fromMvnId("f:f3:1"));
+        fdAddBundle(fd, "g:b4:1", "test-bundle4.jar", ArtifactId.fromMvnId("f:f3:1"));
 
         AnalyserTaskContext ctx = Mockito.mock(AnalyserTaskContext.class);
         Mockito.when(ctx.getFeature()).thenReturn(f);
         Mockito.when(ctx.getFeatureDescriptor()).thenReturn(fd);
-        Mockito.when(ctx.getConfiguration()).thenReturn(
-                Collections.singletonMap("fileStorage",
-                        resourceRoot + "/origins/testImportFromOtherBundleInSameFeature"));
         t.execute(ctx);
 
         Mockito.verify(ctx, Mockito.never()).reportError(Mockito.anyString());
@@ -270,7 +278,8 @@ public class CheckApiRegionsBundleExportsImportsTest {
      * and bundle 2 imports it in the something region, so this succeeds.
      */
     public void testImportExportWithMatchingRegion() throws Exception {
-        String exJson = "[{\"name\": \"something\", \"exports\": [\"org.foo.b\"]}]";
+        String exJson = "[{\"name\": \"something\", \"exports\": [\"org.foo.b\"],\"feature-origins\":\"f:f:1,f:f2:1\"}" +
+            ",{\"name\": \"someotherthing\", \"exports\": [\"org.foo.b\"],\"feature-origins\":\"f:f:1\"}]";
 
         CheckApiRegionsBundleExportsImports t = new CheckApiRegionsBundleExportsImports();
 
@@ -281,15 +290,12 @@ public class CheckApiRegionsBundleExportsImportsTest {
 
         FeatureDescriptor fd = new FeatureDescriptorImpl(f);
 
-        fdAddBundle(fd, "g:b1:1", "test-bundle1.jar");
-        fdAddBundle(fd, "g:b2:1", "test-bundle2.jar");
+        fdAddBundle(fd, "g:b1:1", "test-bundle1.jar", f.getId());
+        fdAddBundle(fd, "g:b2:1", "test-bundle2.jar", ArtifactId.fromMvnId("f:f2:1"));
 
         AnalyserTaskContext ctx = Mockito.mock(AnalyserTaskContext.class);
         Mockito.when(ctx.getFeature()).thenReturn(f);
         Mockito.when(ctx.getFeatureDescriptor()).thenReturn(fd);
-        Mockito.when(ctx.getConfiguration()).thenReturn(
-                Collections.singletonMap("fileStorage",
-                        resourceRoot + "/origins/testImportExportWithMatchingRegion"));
         t.execute(ctx);
 
         Mockito.verify(ctx, Mockito.never()).reportError(Mockito.anyString());
@@ -302,7 +308,11 @@ public class CheckApiRegionsBundleExportsImportsTest {
      * Bundle 2 is not explicitly part of the global region, but can still see it
      */
     public void testImportFromGlobalAlwaysSucceeds() throws Exception {
-        String exJson = "[{\"name\": \"global\", \"exports\": [\"org.foo.b\"]}]";
+        String exJson = "[{\"name\": \"global\", \"exports\": [\"org.foo.b\"],\"feature-origins\":\"f:f:1\"}" +
+            ",{\"name\": \"something\", \"exports\": [],\"feature-origins\":\"f:f2:1\"}" +
+            ",{\"name\": \"lalala\", \"exports\": [],\"feature-origins\":\"f:f:1\"}" +
+            ",{\"name\": \"someotherthing\", \"exports\": [],\"feature-origins\":\"f:f:1\"}]"
+            ;
 
         CheckApiRegionsBundleExportsImports t = new CheckApiRegionsBundleExportsImports();
 
@@ -313,8 +323,8 @@ public class CheckApiRegionsBundleExportsImportsTest {
 
         FeatureDescriptor fd = new FeatureDescriptorImpl(f);
 
-        fdAddBundle(fd, "g:b1:1", "test-bundle1.jar");
-        fdAddBundle(fd, "g:b2:1", "test-bundle2.jar");
+        fdAddBundle(fd, "g:b1:1", "test-bundle1.jar",f.getId());
+        fdAddBundle(fd, "g:b2:1", "test-bundle2.jar",ArtifactId.fromMvnId("f:f2:1"));
 
         AnalyserTaskContext ctx = Mockito.mock(AnalyserTaskContext.class);
         Mockito.when(ctx.getFeature()).thenReturn(f);
@@ -328,9 +338,11 @@ public class CheckApiRegionsBundleExportsImportsTest {
         Mockito.verify(ctx, Mockito.never()).reportWarning(Mockito.anyString());
     }
 
-    private void fdAddBundle(FeatureDescriptor fd, String id, String file) throws IOException {
+    private void fdAddBundle(FeatureDescriptor fd, String id, String file, ArtifactId... origins) throws IOException {
+        Artifact artifact = new Artifact(ArtifactId.fromMvnId(id));
+        artifact.setFeatureOrigins(origins);
         BundleDescriptor bd1 = new BundleDescriptorImpl(
-                new Artifact(ArtifactId.fromMvnId(id)), new File(resourceRoot, file).toURI().toURL(), 0);
+                artifact, new File(resourceRoot, file).toURI().toURL(), 0);
         fd.getBundleDescriptors().add(bd1);
     }
 }

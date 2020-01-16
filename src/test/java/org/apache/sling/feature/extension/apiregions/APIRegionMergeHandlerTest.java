@@ -104,6 +104,7 @@ public class APIRegionMergeHandlerTest {
         global.add(new ApiExport("a.b.c"));
         global.add(new ApiExport("d.e.f"));
         global.add(new ApiExport("test"));
+        global.setFeatureOrigins(sf.getId());
         expected.add(global);
 
         ApiRegion internal = new ApiRegion("internal");
@@ -114,6 +115,7 @@ public class APIRegionMergeHandlerTest {
         ApiRegion something = new ApiRegion("something");
         something.add(new ApiExport("a.ha"));
         something.getProperties().put("my-key", "my-val");
+        something.setFeatureOrigins(sf.getId());
         expected.add(something);
 
         ApiRegions created = ApiRegions.parse((JsonArray) tgEx.getJSONStructure());
@@ -144,103 +146,15 @@ public class APIRegionMergeHandlerTest {
 
         Extension tgEx = tf.getExtensions().iterator().next();
 
-        String expectedJSON = "[{\"name\":\"global\",\"exports\":[\"a.b.c\",\"d.e.f\"]},"
-                + "{\"name\":\"deprecated\",\"exports\":[\"klm\",\"qrs\"]},"
-                + "{\"name\":\"internal\",\"exports\":[\"xyz\"]},"
-                + "{\"name\":\"forbidden\",\"exports\":[\"abc\",\"klm\"]}]";
+        String expectedJSON = "[{\"name\":\"global\",\"exports\":[\"a.b.c\",\"d.e.f\"],\"feature-origins\":\"y:s:2\"},"
+                + "{\"name\":\"deprecated\",\"exports\":[\"klm\",\"qrs\"],\"feature-origins\":\"y:s:2\"},"
+                + "{\"name\":\"internal\",\"exports\":[\"xyz\"],\"feature-origins\":\"y:s:2\"},"
+                + "{\"name\":\"forbidden\",\"exports\":[\"abc\",\"klm\"],\"feature-origins\":\"y:s:2\"}]";
         JsonReader er = Json.createReader(new StringReader(expectedJSON));
         JsonReader ar = Json.createReader(new StringReader(tgEx.getJSON()));
         JsonArray ea = er.readArray();
         JsonArray aa = ar.readArray();
 
         assertEquals(ea, aa);
-    }
-
-    @Test
-    public void testStoreBundleOrigins() throws Exception {
-        HandlerContext hc = Mockito.mock(HandlerContext.class);
-        Mockito.when(hc.getConfiguration()).thenReturn(
-                Collections.singletonMap(AbstractHandler.FILE_STORAGE_DIR_KEY,
-                        tempDir.toString()));
-
-        APIRegionMergeHandler armh = new APIRegionMergeHandler();
-
-        Feature tf = new Feature(ArtifactId.fromMvnId("g:t:1"));
-        Feature sf1 = new Feature(ArtifactId.fromMvnId("g:s1:1"));
-        Extension sf1Ex = new Extension(ExtensionType.JSON, "api-regions", ExtensionState.OPTIONAL);
-        sf1Ex.setJSON("[]");
-
-        sf1.getBundles().add(new Artifact(ArtifactId.fromMvnId("a:b1:1")));
-        sf1.getBundles().add(new Artifact(ArtifactId.fromMvnId("a:b2:1")));
-
-        armh.merge(hc, tf, sf1, null, sf1Ex);
-
-        Feature sf2 = new Feature(ArtifactId.fromMvnId("g:s2:1"));
-        Extension sf2Ex = new Extension(ExtensionType.JSON, "api-regions", ExtensionState.OPTIONAL);
-        sf2Ex.setJSON("[]");
-
-        sf2.getBundles().add(new Artifact(ArtifactId.fromMvnId("a:b2:1")));
-        sf2.getBundles().add(new Artifact(ArtifactId.fromMvnId("a:b3:1")));
-        sf2.getBundles().add(new Artifact(ArtifactId.fromMvnId("a:b2:1")));
-
-        armh.merge(hc, tf, sf2, tf.getExtensions().getByName("api-regions"), sf2Ex);
-
-        Feature sf3 = new Feature(ArtifactId.fromMvnId("g:s3:1"));
-        Extension sf3Ex = new Extension(ExtensionType.JSON, "api-regions", ExtensionState.OPTIONAL);
-        sf3Ex.setJSON("[]");
-
-        sf3.getBundles().add(new Artifact(ArtifactId.fromMvnId("a:b2:1")));
-
-        armh.merge(hc, tf, sf3, tf.getExtensions().getByName("api-regions"), sf3Ex);
-
-        Properties bo = new Properties();
-        bo.load(new FileInputStream(new File(tempDir.toFile(), "g_t_1/bundleOrigins.properties")));
-        assertEquals(3, bo.size());
-
-        assertEquals("g:s1:1", bo.get("a:b1:1"));
-        assertEquals("g:s1:1,g:s2:1,g:s3:1", bo.get("a:b2:1"));
-        assertEquals("g:s2:1", bo.get("a:b3:1"));
-    }
-
-    @Test
-    public void testStoreRegionOrigins() throws Exception {
-        HandlerContext hc = Mockito.mock(HandlerContext.class);
-        Mockito.when(hc.getConfiguration()).thenReturn(
-                Collections.singletonMap(AbstractHandler.FILE_STORAGE_DIR_KEY,
-                        tempDir.toString()));
-
-        APIRegionMergeHandler armh = new APIRegionMergeHandler();
-
-        Feature tf = new Feature(ArtifactId.fromMvnId("x:t:1"));
-        Feature sf1 = new Feature(ArtifactId.fromMvnId("y:s:2"));
-
-        Extension sr1Ex = new Extension(ExtensionType.JSON, "api-regions", ExtensionState.OPTIONAL);
-        sr1Ex.setJSON("[{\"name\":\"global\","
-                + "\"exports\": [\"a.b.c\",\"d.e.f\"]},"
-                + "{\"name\":\"deprecated\","
-                + "\"exports\":[\"klm\",\"#ignored\",\"qrs\"]},"
-                + "{\"name\":\"internal\","
-                + "\"exports\":[\"xyz\"]},"
-                + "{\"name\":\"forbidden\","
-                + "\"exports\":[\"abc\",\"klm\"]}]");
-
-        armh.merge(hc, tf, sf1, null, sr1Ex);
-
-        Feature sf2 = new Feature(ArtifactId.fromMvnId("z:s:1"));
-
-        Extension sr2Ex = new Extension(ExtensionType.JSON, "api-regions", ExtensionState.OPTIONAL);
-        sr2Ex.setJSON("[{\"name\":\"global\","
-                + "\"exports\": [\"g.h.i\"]},"
-                + "{\"name\":\"internal\","
-                + "\"exports\":[]},"
-                + "{\"name\":\"somethingelse\","
-                + "\"exports\":[\"qqq\"]}]");
-        armh.merge(hc, tf, sf2, tf.getExtensions().getByName("api-regions"), sr2Ex);
-
-        Properties ro = new Properties();
-        ro.load(new FileInputStream(new File(tempDir.toFile(), "x_t_1/regionOrigins.properties")));
-        assertEquals(2, ro.size());
-        assertEquals("global,deprecated,internal,forbidden", ro.get("y:s:2"));
-        assertEquals("global,internal,somethingelse", ro.get("z:s:1"));
     }
 }
