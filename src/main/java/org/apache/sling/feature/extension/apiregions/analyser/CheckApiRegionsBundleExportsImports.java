@@ -230,10 +230,12 @@ public class CheckApiRegionsBundleExportsImports implements AnalyserTask {
                                     for (String imRegion : imRegions) {
                                         ApiRegion region = apiRegions.getRegionByName(
                                             imRegion);
-                                        for (ApiExport export : region.listAllExports()) {
-                                            if (export.getName().equals(
-                                                pck.getName())) {
-                                                exRegions.add(imRegion);
+                                        if (region != null) {
+                                            for (ApiExport export : region.listAllExports()) {
+                                                if (export.getName().equals(
+                                                    pck.getName())) {
+                                                    exRegions.add(imRegion);
+                                                }
                                             }
                                         }
                                     }
