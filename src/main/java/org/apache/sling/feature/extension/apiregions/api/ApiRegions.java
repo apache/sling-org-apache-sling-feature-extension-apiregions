@@ -21,9 +21,11 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-
+import java.util.Set;
+import java.util.stream.Stream;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
@@ -36,6 +38,7 @@ import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
 import javax.json.JsonWriter;
 
+import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
 
 /**
@@ -155,6 +158,12 @@ public class ApiRegions {
         return found;
     }
 
+    public ApiRegion[] getRegionsByFeature(final ArtifactId featureId) {
+        return this.regions.stream().filter(
+            region -> Stream.of(region.getFeatureOrigins()).anyMatch(featureId::equals)
+        ).toArray(ApiRegion[]::new);
+    }
+
     /**
      * Get the names of the regions
      *
@@ -203,6 +212,14 @@ public class ApiRegions {
                 }
 
                 regionBuilder.add(EXPORTS_KEY, expArrayBuilder);
+            }
+            ArtifactId[] origins = region.getFeatureOrigins();
+            if (origins.length > 0) {
+                final JsonArrayBuilder originBuilder = Json.createArrayBuilder();
+                for (ArtifactId origin : origins) {
+                    originBuilder.add(origin.toMvnId());
+                }
+                regionBuilder.add(Artifact.KEY_FEATURE_ORIGINS, originBuilder);
             }
             for (final Map.Entry<String, String> entry : region.getProperties().entrySet()) {
                 regionBuilder.add(entry.getKey(), entry.getValue());
@@ -296,6 +313,12 @@ public class ApiRegions {
                                 }
                             }
                         }
+                    } else if (entry.getKey().equals(Artifact.KEY_FEATURE_ORIGINS)) {
+                        Set<ArtifactId> origins = new LinkedHashSet<>();
+                        for (final JsonValue origin : (JsonArray) entry.getValue()) {
+                            origins.add(ArtifactId.fromMvnId(((JsonString) origin).getString()));
+                        }
+                        region.setFeatureOrigins(origins.toArray(new ArtifactId[0]));
                     } else {
                         region.getProperties().put(entry.getKey(), ((JsonString) entry.getValue()).getString());
                     }

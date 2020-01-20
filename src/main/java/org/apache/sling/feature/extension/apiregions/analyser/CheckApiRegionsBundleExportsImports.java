@@ -18,27 +18,22 @@
  */
 package org.apache.sling.feature.extension.apiregions.analyser;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
-
+import java.util.stream.Stream;
 import javax.json.JsonArray;
 
+import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.Extensions;
 import org.apache.sling.feature.Feature;
@@ -53,7 +48,6 @@ import org.osgi.framework.Version;
 
 public class CheckApiRegionsBundleExportsImports implements AnalyserTask {
 
-    private static final String FILE_STORAGE_CONFIG_KEY = "fileStorage";
     private static final String IGNORE_API_REGIONS_CONFIG_KEY = "ignoreAPIRegions";
     private static final String GLOBAL_REGION = "global";
     private static final String NO_REGION = " __NO_REGION__ ";
@@ -148,31 +142,21 @@ public class CheckApiRegionsBundleExportsImports implements AnalyserTask {
         if ( ctx.getFrameworkDescriptor() != null ) {
             exportingBundles.add(ctx.getFrameworkDescriptor());
         }
-
-        Map<String, Set<String>> bundleToOriginalFeatures;
-        Map<String, Set<String>> featureToOriginalRegions;
         ApiRegions apiRegions = new ApiRegions(); // Empty API Regions;
 
-        if (ignoreAPIRegions) {
-            bundleToOriginalFeatures = Collections.emptyMap();
-            featureToOriginalRegions = Collections.emptyMap();
-        } else {
-            bundleToOriginalFeatures = readBundleOrigins(ctx);
-            featureToOriginalRegions = readRegionOrigins(ctx);
-            Feature feature = ctx.getFeature();
+        Feature feature = ctx.getFeature();
 
-            // extract and check the api-regions
+        // extract and check the api-regions
 
-            Extensions extensions = feature.getExtensions();
-            Extension apiRegionsExtension = extensions.getByName(ApiRegions.EXTENSION_NAME);
-            if (apiRegionsExtension != null && apiRegionsExtension.getJSONStructure() != null) {
-                try {
-                    apiRegions = ApiRegions.parse((JsonArray) apiRegionsExtension.getJSONStructure());
-                } catch (IOException e) {
-                    ctx.reportError("API Regions '" + apiRegionsExtension.getJSON()
-                            + "' does not represent a valid JSON 'api-regions': " + e.getMessage());
-                    return;
-                }
+        Extensions extensions = feature.getExtensions();
+        Extension apiRegionsExtension = extensions.getByName(ApiRegions.EXTENSION_NAME);
+        if (apiRegionsExtension != null && apiRegionsExtension.getJSONStructure() != null) {
+            try {
+                apiRegions = ApiRegions.parse((JsonArray) apiRegionsExtension.getJSONStructure());
+            } catch (IOException e) {
+                ctx.reportError("API Regions '" + apiRegionsExtension.getJSON()
+                        + "' does not represent a valid JSON 'api-regions': " + e.getMessage());
+                return;
             }
         }
 
@@ -188,8 +172,7 @@ public class CheckApiRegionsBundleExportsImports implements AnalyserTask {
                 if ( info.getImportedPackages() != null ) {
                     for(final PackageInfo pck : info.getImportedPackages() ) {
                         final Map<BundleDescriptor, Set<String>> candidates =
-                                getCandidates(exportingBundles, pck, info,
-                                        bundleToOriginalFeatures, featureToOriginalRegions, apiRegions);
+                                getCandidates(exportingBundles, pck, info, apiRegions, ignoreAPIRegions);
                         if ( candidates.isEmpty() ) {
                             if ( pck.isOptional() ) {
                                 getReport(reports, info).missingExportsForOptional.add(pck);
@@ -223,7 +206,7 @@ public class CheckApiRegionsBundleExportsImports implements AnalyserTask {
 
                                     // Find out what regions the importing bundle is in
                                     Set<String> imRegions =
-                                            getBundleRegions(info, bundleToOriginalFeatures, featureToOriginalRegions);
+                                            getBundleRegions(info, apiRegions, ignoreAPIRegions);
 
 
                                     // Check exports of the importing regions to consider inherited exports
@@ -310,21 +293,12 @@ public class CheckApiRegionsBundleExportsImports implements AnalyserTask {
         }
     }
 
-    private Set<String> getBundleRegions(BundleDescriptor info, Map<String, Set<String>> bundleToOriginalFeatures,
-            Map<String, Set<String>> featureToOriginalRegions) {
-        Set<String> result = new HashSet<>();
+    private Set<String> getBundleRegions(BundleDescriptor info, ApiRegions regions, boolean ignoreAPIRegions) {
+        Set<String> result = ignoreAPIRegions ? Collections.emptySet() : Stream.of(info.getArtifact().getFeatureOrigins())
+            .map(regions::getRegionsByFeature).flatMap(Stream::of).map(ApiRegion::getName).collect(Collectors.toSet());
 
-        Set<String> originFeatures = bundleToOriginalFeatures.get(info.getArtifact().getId().toMvnId());
-        if (originFeatures != null) {
-            for (String feature : originFeatures) {
-                Set<String> originRegions = featureToOriginalRegions.get(feature);
-                if (originRegions != null) {
-                    result.addAll(originRegions);
-                }
-            }
-        }
-
-        if (result.size() == 0) {
+        if (result.isEmpty()) {
+            result = new HashSet<>();
             result.add(NO_REGION);
         }
         return result;
@@ -362,22 +336,15 @@ public class CheckApiRegionsBundleExportsImports implements AnalyserTask {
             final List<BundleDescriptor> exportingBundles,
             final PackageInfo pck,
             final BundleDescriptor requestingBundle,
-            final Map<String, Set<String>> bundleToOriginalFeatures,
-            final Map<String, Set<String>> featureToOriginalRegions,
-            final ApiRegions apiRegions) throws IOException {
-        Set<String> rf = bundleToOriginalFeatures.get(
-                requestingBundle.getArtifact().getId().toMvnId());
-        if (rf == null)
-            rf = Collections.emptySet();
+            final ApiRegions apiRegions, boolean ignoreAPIRegions) {
+        Set<String> rf = ignoreAPIRegions ? Collections.emptySet() : Stream.of(requestingBundle.getArtifact().getFeatureOrigins()).map(ArtifactId::toMvnId).collect(Collectors.toSet());
+
         final Set<String> requestingFeatures = rf;
 
         final Map<BundleDescriptor, Set<String>> candidates = new HashMap<>();
         for(final BundleDescriptor info : exportingBundles) {
             if ( info.isExportingPackage(pck.getName()) ) {
-                Set<String> providingFeatures = bundleToOriginalFeatures.get(
-                        info.getArtifact().getId().toMvnId());
-                if (providingFeatures == null)
-                    providingFeatures = Collections.emptySet();
+                Set<String> providingFeatures = ignoreAPIRegions ? Collections.emptySet() : Stream.of(info.getArtifact().getFeatureOrigins()).map(ArtifactId::toMvnId).collect(Collectors.toSet());
 
                 // Compute the intersection without modifying the sets
                 Set<String> intersection = providingFeatures.stream().filter(
@@ -388,7 +355,7 @@ public class CheckApiRegionsBundleExportsImports implements AnalyserTask {
                     continue;
                 }
 
-                for (String region : getBundleRegions(info, bundleToOriginalFeatures, featureToOriginalRegions)) {
+                for (String region : getBundleRegions(info, apiRegions, ignoreAPIRegions)) {
                     if (!NO_REGION.equals(region) &&
                             (apiRegions.getRegionByName(region) == null
                                     || apiRegions.getRegionByName(region).getExportByName(pck.getName()) == null))
@@ -404,51 +371,5 @@ public class CheckApiRegionsBundleExportsImports implements AnalyserTask {
             }
         }
         return candidates;
-    }
-
-    private Map<String, Set<String>> readBundleOrigins(AnalyserTaskContext ctx) throws IOException {
-        return readOrigins(ctx, "bundleOrigins.properties");
-    }
-
-    private Map<String, Set<String>> readRegionOrigins(AnalyserTaskContext ctx) throws IOException {
-        return readOrigins(ctx, "regionOrigins.properties");
-    }
-
-    private Map<String, Set<String>> readOrigins(AnalyserTaskContext ctx, String fileName) throws IOException, FileNotFoundException {
-        Feature feature = ctx.getFeature();
-        Extension APIRegionExtension = feature.getExtensions().getByName(ApiRegions.EXTENSION_NAME);
-
-        String fileStorage = ctx.getConfiguration().get(FILE_STORAGE_CONFIG_KEY);
-        if (fileStorage == null) {
-            if (APIRegionExtension != null) {
-                throw new IllegalStateException("Feature " + feature.getId() +
-                        " has API regions defined, but no storage is configured for origin information files. "
-                        + "Please configure the " + FILE_STORAGE_CONFIG_KEY + " configuration item.");
-            }
-            return Collections.emptyMap();
-        }
-
-        String featureName = feature.getId().toMvnId().replaceAll("[^a-zA-Z0-9\\.\\-]", "_");
-        File file = new File(fileStorage, featureName + File.separator + fileName);
-        if (!file.exists()) {
-            if (APIRegionExtension != null)
-                throw new IllegalStateException("Feature " + feature.getId() +
-                        " has API regions defined but no file with origin information can be found " + file +
-                        " Configure the org.apache.sling.feature.extension.apiregions appropriately to write this information");
-            return Collections.emptyMap();
-        }
-
-        Properties p = new Properties();
-        try (InputStream is = new FileInputStream(file)) {
-            p.load(is);
-        }
-
-        Map<String, Set<String>> m = new HashMap<>();
-        for (String key : p.stringPropertyNames()) {
-            String val = p.getProperty(key);
-            String[] features = val.split(",");
-            m.put(key, new HashSet<>(Arrays.asList(features)));
-        }
-        return m;
     }
 }

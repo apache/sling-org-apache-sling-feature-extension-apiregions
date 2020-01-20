@@ -17,11 +17,17 @@
 package org.apache.sling.feature.extension.apiregions.api;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.apache.sling.feature.ArtifactId;
 
 /**
  * Describes an api region
@@ -32,6 +38,8 @@ public class ApiRegion {
     public static final String GLOBAL = "global";
 
     private final List<ApiExport> exports = new ArrayList<>();
+
+    private final List<ArtifactId> origins = new ArrayList<>();
 
     private final Map<String, String> properties = new HashMap<>();
 
@@ -57,6 +65,17 @@ public class ApiRegion {
      */
     public String getName() {
         return name;
+    }
+
+    public ArtifactId[] getFeatureOrigins() {
+        return origins.toArray(new ArtifactId[0]);
+    }
+
+    public void setFeatureOrigins(ArtifactId... featureOrigins) {
+        origins.clear();
+        if (featureOrigins != null) {
+            origins.addAll(Stream.of(featureOrigins).filter(Objects::nonNull).distinct().collect(Collectors.toList()));
+        }
     }
 
     /**
@@ -183,34 +202,26 @@ public class ApiRegion {
         int result = 1;
         result = prime * result + ((exports == null) ? 0 : exports.hashCode());
         result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + Arrays.hashCode(getFeatureOrigins());
         result = prime * result + ((properties == null) ? 0 : properties.hashCode());
         return result;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
             return true;
-        if (obj == null)
+        }
+        if (o == null || getClass() != o.getClass())
+        {
             return false;
-        if (getClass() != obj.getClass())
-            return false;
-        ApiRegion other = (ApiRegion) obj;
-        if (exports == null) {
-            if (other.exports != null)
-                return false;
-        } else if (!exports.equals(other.exports))
-            return false;
-        if (name == null) {
-            if (other.name != null)
-                return false;
-        } else if (!name.equals(other.name))
-            return false;
-        if (properties == null) {
-            if (other.properties != null)
-                return false;
-        } else if (!properties.equals(other.properties))
-            return false;
-        return true;
+        }
+        ApiRegion region = (ApiRegion) o;
+        return exports.equals(region.exports) &&
+            origins.equals(region.origins) &&
+            properties.equals(region.properties) &&
+            Objects.equals(name, region.name);
     }
 }

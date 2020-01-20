@@ -19,7 +19,6 @@ package org.apache.sling.feature.extension.apiregions.analyser;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.json.JsonArray;
 
 import org.apache.sling.feature.Extension;
