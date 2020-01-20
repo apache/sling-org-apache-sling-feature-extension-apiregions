@@ -47,8 +47,6 @@ public class ApiRegion {
 
     private volatile ApiRegion parent;
 
-    private volatile ApiRegion child;
-
     /**
      * Create a new named region
      *
@@ -157,6 +155,21 @@ public class ApiRegion {
     }
 
     /**
+     * Get an export by name
+     *
+     * @param name package name
+     * @return The export or {@code null}
+     */
+    public ApiExport getAllExportByName(final String name) {
+        for (final ApiExport e : listAllExports()) {
+            if (e.getName().equals(name)) {
+                return e;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Get additional properties
      *
      * @return Modifiable map of properties
@@ -174,26 +187,14 @@ public class ApiRegion {
         return this.parent;
     }
 
-    /**
-     * Get the child region
-     *
-     * @return The child region or {@code null}
-     */
-    public ApiRegion getChild() {
-        return this.child;
-    }
-
     void setParent(final ApiRegion region) {
         this.parent = region;
     }
 
-    void setChild(final ApiRegion region) {
-        this.child = region;
-    }
 
     @Override
     public String toString() {
-        return "ApiRegion [exports=" + exports + ", properties=" + properties + ", name=" + name + "]";
+        return "ApiRegion [exports=" + exports + ", properties=" + properties + ", name=" + name + ", feature-origins=" + origins + "]";
     }
 
     @Override

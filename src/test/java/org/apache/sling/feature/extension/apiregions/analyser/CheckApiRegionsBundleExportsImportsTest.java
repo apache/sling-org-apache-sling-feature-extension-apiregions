@@ -343,8 +343,9 @@ public class CheckApiRegionsBundleExportsImportsTest {
      */
     public void testImportFromInheritedRegionSucceeds() throws Exception {
         String exJson = "[" +
-            "{\"name\": \"region1\", \"exports\": [\"org.foo.b\"],\"feature-origins\":[\"f:f:1\"]}," +
-            "{\"name\": \"region2\", \"exports\": [],\"feature-origins\":[\"f:f:2\"]}" +
+            "{\"name\": \"region1\", \"exports\": [\"org.foo.b\"],\"feature-origins\":[\"f:f1:1\"]}," +
+            "{\"name\": \"region2\", \"exports\": [\"org.foo.c\"],\"feature-origins\":[\"f:f1:1\",\"f:f2:1\"]}," +
+            "{\"name\": \"region3\", \"exports\": [],\"feature-origins\":[\"f:f2:1\"]}" +
             "]";
 
         CheckApiRegionsBundleExportsImports t = new CheckApiRegionsBundleExportsImports();
@@ -358,14 +359,11 @@ public class CheckApiRegionsBundleExportsImportsTest {
         FeatureDescriptor fd = new FeatureDescriptorImpl(f);
 
         fdAddBundle(fd, "g:b1:1", "test-bundle1.jar", f.getId());
-        fdAddBundle(fd, "g:b2:1", "test-bundle2.jar", ArtifactId.fromMvnId("f:f:2"));
+        fdAddBundle(fd, "g:b2:1", "test-bundle2.jar", ArtifactId.fromMvnId("f:f2:1"));
 
         AnalyserTaskContext ctx = Mockito.mock(AnalyserTaskContext.class);
         Mockito.when(ctx.getFeature()).thenReturn(f);
         Mockito.when(ctx.getFeatureDescriptor()).thenReturn(fd);
-        Mockito.when(ctx.getConfiguration()).thenReturn(
-            Collections.singletonMap("fileStorage",
-                resourceRoot + "/origins/testImportFromInheritedRegionSucceeds"));
         t.execute(ctx);
 
         Mockito.verify(ctx, Mockito.never()).reportError(Mockito.anyString());

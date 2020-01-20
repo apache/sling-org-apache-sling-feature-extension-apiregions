@@ -22,6 +22,7 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
 
+import org.apache.sling.feature.ArtifactId;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -69,11 +70,16 @@ public class TestApiRegions {
     public void testOrdering() throws Exception {
         final ApiRegions regions = new ApiRegions();
         final ApiRegion one = new ApiRegion("one");
+        one.setFeatureOrigins(ArtifactId.fromMvnId("f:f1:1"));
         final ApiRegion two = new ApiRegion("two");
+        two.setFeatureOrigins(ArtifactId.fromMvnId("f:f1:1"));
         final ApiRegion three = new ApiRegion("three");
+        three.setFeatureOrigins(ArtifactId.fromMvnId("f:f1:1"));
 
         final ApiRegion duplicate = new ApiRegion("two");
+        duplicate.setFeatureOrigins(ArtifactId.fromMvnId("f:f1:1"));
         final ApiRegion other = new ApiRegion("other");
+        other.setFeatureOrigins(ArtifactId.fromMvnId("f:f1:1"));
 
         assertTrue(regions.add(one));
         assertTrue(regions.add(two));
@@ -84,20 +90,8 @@ public class TestApiRegions {
         assertEquals(3, regions.listRegions().size());
 
         assertNull(one.getParent());
-        assertEquals(two, one.getChild());
         assertEquals(one, two.getParent());
-        assertEquals(three, two.getChild());
         assertEquals(two, three.getParent());
-        assertNull(three.getChild());
-
-        assertFalse(regions.remove(other));
-        assertTrue(regions.remove(two));
-
-        assertEquals(2, regions.listRegions().size());
-        assertNull(one.getParent());
-        assertEquals(three, one.getChild());
-        assertEquals(one, three.getParent());
-        assertNull(three.getChild());
     }
 
     @Test
@@ -105,12 +99,15 @@ public class TestApiRegions {
         final ApiRegions regions = new ApiRegions();
 
         final ApiRegion one = new ApiRegion("one");
+        one.setFeatureOrigins(ArtifactId.fromMvnId("f:f1:1"));
         one.add(new ApiExport("a"));
 
         final ApiRegion two = new ApiRegion("two");
+        two.setFeatureOrigins(ArtifactId.fromMvnId("f:f1:1"));
         two.add(new ApiExport("b"));
 
         final ApiRegion three = new ApiRegion("three");
+        three.setFeatureOrigins(ArtifactId.fromMvnId("f:f1:1"));
         three.add(new ApiExport("c"));
 
         assertTrue(regions.add(one));

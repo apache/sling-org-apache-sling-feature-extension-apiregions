@@ -39,7 +39,6 @@ import org.apache.sling.feature.Extensions;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.analyser.task.AnalyserTask;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
-import org.apache.sling.feature.extension.apiregions.api.ApiExport;
 import org.apache.sling.feature.extension.apiregions.api.ApiRegion;
 import org.apache.sling.feature.extension.apiregions.api.ApiRegions;
 import org.apache.sling.feature.scanner.BundleDescriptor;
@@ -208,18 +207,6 @@ public class CheckApiRegionsBundleExportsImports implements AnalyserTask {
                                     Set<String> imRegions =
                                             getBundleRegions(info, apiRegions, ignoreAPIRegions);
 
-                                    // Check exports of the importing regions to consider inherited exports
-                                    for (String imRegion : imRegions)
-                                    {
-                                        ApiRegion region = apiRegions.getRegionByName(imRegion);
-                                        for (ApiExport export : region.listAllExports())
-                                        {
-                                            if (export.getName().equals(pck.getName()))
-                                            {
-                                                exRegions.add(imRegion);
-                                            }
-                                        }
-                                    }
                                     // Record the exporting and importing regions for diagnostics
                                     exportingRegions.addAll(exRegions);
                                     importingRegions.addAll(imRegions);
@@ -353,7 +340,7 @@ public class CheckApiRegionsBundleExportsImports implements AnalyserTask {
                 for (String region : getBundleRegions(info, apiRegions, ignoreAPIRegions)) {
                     if (!NO_REGION.equals(region) &&
                             (apiRegions.getRegionByName(region) == null
-                                    || apiRegions.getRegionByName(region).getExportByName(pck.getName()) == null))
+                                    || apiRegions.getRegionByName(region).getAllExportByName(pck.getName()) == null))
                         continue;
 
                     Set<String> regions = candidates.get(info);

@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -97,46 +98,20 @@ public class ApiRegions {
      * @return {@code true} if the region could be added, {@code false} otherwise
      */
     public boolean add(final ApiRegion region) {
-        boolean found = false;
         for (final ApiRegion c : this.regions) {
             if (c.getName().equals(region.getName())) {
-                found = true;
-                break;
+                return false;
             }
         }
-        if (!found) {
-            final ApiRegion parent = this.regions.isEmpty() ? null : this.regions.get(this.regions.size() - 1);
-            this.regions.add(region);
-            region.setParent(parent);
-            region.setChild(null);
-            if (parent != null) {
-                parent.setChild(region);
-            }
-        }
-        return !found;
-    }
+        this.regions.stream()
+            .filter(
+                existingRegion ->
+                    Stream.of(existingRegion.getFeatureOrigins())
+                        .anyMatch(Arrays.asList(region.getFeatureOrigins())::contains)
+            ).reduce((a,b) -> b).ifPresent(region::setParent);
 
-    /**
-     * Remove the region
-     *
-     * @param region Region to remove
-     * @return {@code true} if the region got removed.
-     */
-    public boolean remove(final ApiRegion region) {
-        boolean result = this.regions.remove(region);
-        if (result) {
-            final ApiRegion parent = region.getParent();
-            final ApiRegion child = region.getChild();
-            if (parent != null) {
-                parent.setChild(child);
-                region.setParent(null);
-            }
-            if (child != null) {
-                child.setParent(parent);
-                region.setChild(null);
-            }
-        }
-        return result;
+        this.regions.add(region);
+        return true;
     }
 
     /**

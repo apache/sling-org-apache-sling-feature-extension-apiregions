@@ -111,6 +111,9 @@ public class LauncherProperties
                         regionNames = new HashSet<>();
                     }
                     regionNames.add(region.getName());
+                    for (ApiRegion parent = region.getParent(); parent != null; parent = parent.getParent()) {
+                        regionNames.add(parent.getName());
+                    }
                     return regionNames;
                 });
             }

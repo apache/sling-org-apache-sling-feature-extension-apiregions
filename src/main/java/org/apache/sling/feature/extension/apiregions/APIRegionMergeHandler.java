@@ -63,7 +63,6 @@ public class APIRegionMergeHandler implements MergeHandler {
             for (final ApiRegion targetRegion : targetRegions.listRegions()) {
                 final ApiRegion sourceRegion = srcRegions.getRegionByName(targetRegion.getName());
                 if (sourceRegion != null) {
-                    srcRegions.remove(sourceRegion);
                     for (final ApiExport srcExp : sourceRegion.listExports()) {
                         if (targetRegion.getExportByName(srcExp.getName()) == null) {
                             targetRegion.add(srcExp);
@@ -81,13 +80,17 @@ public class APIRegionMergeHandler implements MergeHandler {
 
             // If there are any remaining regions in the src extension, process them now
             for (final ApiRegion r : srcRegions.listRegions()) {
-                LinkedHashSet<ArtifactId> origins = new LinkedHashSet<>(Arrays.asList(r.getFeatureOrigins()));
-                if (origins.isEmpty()) {
-                    origins.add(source.getId());
-                    r.setFeatureOrigins(origins.toArray(new ArtifactId[0]));
-                }
-                if (!targetRegions.add(r)) {
-                    throw new IllegalStateException("Duplicate region " + r.getName());
+                if (targetRegions.getRegionByName(r.getName()) == null) {
+                    LinkedHashSet<ArtifactId> origins = new LinkedHashSet<>(Arrays.asList(r.getFeatureOrigins()));
+                    if (origins.isEmpty())
+                    {
+                        origins.add(source.getId());
+                        r.setFeatureOrigins(origins.toArray(new ArtifactId[0]));
+                    }
+                    if (!targetRegions.add(r))
+                    {
+                        throw new IllegalStateException("Duplicate region " + r.getName());
+                    }
                 }
             }
 
