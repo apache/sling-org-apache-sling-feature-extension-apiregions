@@ -77,7 +77,7 @@ public class CheckApiRegions extends AbstractApiRegionsAnalyserTask {
                             getExtension(region.listExports(), "is", "are"));
                     region.listExports().forEach(api -> formatter.format(" * %s%n", api.getName()));
 
-                    ctx.reportError(formatter.toString());
+                    ctx.reportWarning(formatter.toString());
 
                     formatter.close();
                 }
