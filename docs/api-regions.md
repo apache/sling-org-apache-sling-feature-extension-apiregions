@@ -17,7 +17,7 @@ A feature can have an additional extension of type JSON named `api-region`. The 
 
 Note that the `global` region is a predefined region that exports the listed packages to everyone. Other region names can be chosen freely. Packages listed in these other regions are only exposed to bundles in features that are in the same region.
 
-    "api-regions:JSON|optinal" : [
+    "api-regions:JSON|optional" : [
         {
             "name": "global",
             "exports": [
