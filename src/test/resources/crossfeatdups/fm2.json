@@ -1,0 +1,25 @@
+{
+  "id":"g:fm1:1.2.3",
+  "bundles":[
+    {
+      "id":"g:exp0:1",
+      "feature-origins":"g:f2:1,g:f1:1"
+    },
+    {
+      "id":"g:exp1:1",
+      "feature-origins":"g:f1:1"
+    }
+  ],
+  "api-regions:JSON|false":[
+    {
+      "name":"global",
+      "exports":[
+        "org.foo.bar",
+        "org.foo.bar.bingo"
+      ],
+      "feature-origins":[
+        "g:f1:1","g:f2:1"
+      ]      
+    }
+  ]
+}

@@ -36,10 +36,8 @@ expose in earlier regions in the list, so the order is important.
   * `order`: A comma separated list of the region names declaring the order in which they should be found. Not all regions declared must be present, but if they are present this
 order must be obeyed.
 
-* `api-regions-crossfeature-dups`: This analyser checks whether there are exported packages in a feature model
-that does _not_ opt in to the API Regions (i.e. it does not have an API-Regions section) that overlap with exported
-packages from API regions in other feature models. It can prevent against unwanted results when packages are
-exported from the outside which should be exported from an API Region.
+* `api-regions-crossfeature-dups`: This analyser checks whether the same package is exported 
+into the same API Region from multiple features. It can prevent against unwanted results when packages are exported by a bundle in a platform feature in an API Region such as `global` as well as by a non-platform bundle.
 This analyser only provides a useful result when run on
 an aggregate feature model, i.e. a feature model that was created by aggregating a number of other feature models. It uses the
 `feature-origins` metadata to find the features that bundles were initially declared in. It then matches this with the `feature-origins` found in the `api-regions` section. Exports from  bundles from features that don't
@@ -47,6 +45,11 @@ declare `api-regions` are compared to declared exports in the `api-regions` sect
 is reported.
   * Configuration parameters:
   * `regions`: a comma separated list of regions to check. If not specified all regions found are checked. This configuration item can be used to exclude certain regions from the check.
+  * `definingFeatures`: comma separated list the features IDs that are allowed to define the API. If overlapping exports
+are done into the selected regions from other features this will cause an error. The suffix `*` is
+supported as a wildcard at the end of the feature ID. If this configuration is not specified, the list of defining features
+is built up from all features that opt-in to the API regions and ones that
+don't opt-in are assumed to be non-defining.
   * `warningPackages`: if packages listed here are found to overlap, a warning instead of an error is reported. Supports either literal package names (e.g. `javax.servlet`) or wildcards with an asterisk at the end (e.g. `javax.*`).
   * `ignoredPackages`: packages listed here are completely ignored in the analysis. Supports literal package names or wildcards with an asterisk at the end.
 
