@@ -37,6 +37,7 @@ import org.apache.sling.feature.extension.apiregions.api.config.ConfigurationApi
 import org.apache.sling.feature.extension.apiregions.api.config.ConfigurationDescription;
 import org.apache.sling.feature.extension.apiregions.api.config.FactoryConfigurationDescription;
 import org.apache.sling.feature.extension.apiregions.api.config.FrameworkPropertyDescription;
+import org.apache.sling.feature.extension.apiregions.api.config.Mode;
 import org.apache.sling.feature.extension.apiregions.api.config.Operation;
 import org.apache.sling.feature.extension.apiregions.api.config.Region;
 import org.osgi.util.converter.Converter;
@@ -137,23 +138,24 @@ public class FeatureValidator {
                 if ( config.isFactoryConfiguration() ) {
                     final FactoryConfigurationDescription desc = api.getFactoryConfigurationDescriptions().get(config.getFactoryPid());
                     if ( desc != null ) {
+                        final Mode validationMode = desc.getMode() != null ? desc.getMode() : api.getMode();
                         final ConfigurationValidationResult r = configurationValidator.validate(config, desc, regionInfo.region, api.getMode());
                         result.getConfigurationResults().put(config.getPid(), r);
                         if ( regionInfo.region != Region.INTERNAL ) {
                             if ( desc.getOperations().isEmpty() ) {
-                                ConfigurationValidator.setResult(r, api.getMode(), desc, "No operations allowed for " +
+                                ConfigurationValidator.setResult(r, validationMode, desc, "No operations allowed for " +
                                         "factory configuration");
                             } else {
                                 if ( regionInfo.isUpdate && !desc.getOperations().contains(Operation.UPDATE)) {
-                                    ConfigurationValidator.setResult(r, api.getMode(), desc, "Updating of factory " +
+                                    ConfigurationValidator.setResult(r, validationMode, desc, "Updating of factory " +
                                             "configuration is not allowed");
                                 } else if ( !regionInfo.isUpdate && !desc.getOperations().contains(Operation.CREATE)) {
-                                    ConfigurationValidator.setResult(r, api.getMode(), desc, "Creation of factory " +
+                                    ConfigurationValidator.setResult(r, validationMode, desc, "Creation of factory " +
                                             "configuration is not allowed");
                                 }
                             }
                             if ( desc.getInternalNames().contains(config.getName())) {
-                                ConfigurationValidator.setResult(r, api.getMode(), desc, "Factory configuration with " +
+                                ConfigurationValidator.setResult(r, validationMode, desc, "Factory configuration with " +
                                         "name is not allowed");
                             }
                         }                        

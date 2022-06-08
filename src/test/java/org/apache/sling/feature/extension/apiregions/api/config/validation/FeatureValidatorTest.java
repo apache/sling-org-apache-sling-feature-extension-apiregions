@@ -493,17 +493,29 @@ public class FeatureValidatorTest {
         api.getFactoryConfigurationDescriptions().get(FACTORY_PID).getInternalNames().add("b");
         ConfigurationApi.setConfigurationApi(f1, api);
 
+        // global region -> fail
         FeatureValidationResult result = validator.validate(f1, api);
         assertFalse(result.isValid());
         assertFalse(result.getConfigurationResults().get(FACTORY_PID.concat("~a")).isValid());
         assertFalse(result.getConfigurationResults().get(FACTORY_PID.concat("~b")).isValid());
         assertTrue(result.getConfigurationResults().get(FACTORY_PID.concat("~print")).isValid());
 
-       // internal region
-       api.setRegion(Region.INTERNAL);
-       ConfigurationApi.setConfigurationApi(f1, api);
-       result = validator.validate(f1, api);
-       assertTrue(result.isValid());
+        // global region, lenient -> warn
+        api.getFactoryConfigurationDescriptions().get(FACTORY_PID).setMode(Mode.LENIENT);
+        ConfigurationApi.setConfigurationApi(f1, api);
+        result = validator.validate(f1, api);
+        assertTrue(result.isValid());
+        assertEquals(1, result.getConfigurationResults().get(FACTORY_PID.concat("~a")).getWarnings().size());
+        assertEquals(1, result.getConfigurationResults().get(FACTORY_PID.concat("~b")).getWarnings().size());
+        assertEquals(0, result.getConfigurationResults().get(FACTORY_PID.concat("~print")).getWarnings().size());
+
+        // internal region
+        api.getFactoryConfigurationDescriptions().get(FACTORY_PID).setMode(null);
+        ConfigurationApi.setConfigurationApi(f1, api);
+        api.setRegion(Region.INTERNAL);
+        ConfigurationApi.setConfigurationApi(f1, api);
+        result = validator.validate(f1, api);
+        assertTrue(result.isValid());
     }
 
     @Test public void testFactoryConfigurationOperationsWithCreate() {
@@ -517,12 +529,29 @@ public class FeatureValidatorTest {
         assertFalse(result.isValid());
         assertFalse(result.getConfigurationResults().get(FACTORY_PID.concat("~print")).isValid());
 
+        // no operation, lenient -> warn
+        api.getFactoryConfigurationDescriptions().get(FACTORY_PID).setMode(Mode.LENIENT);
+        api.getFactoryConfigurationDescriptions().get(FACTORY_PID).getOperations().clear();
+        ConfigurationApi.setConfigurationApi(f1, api);
+        result = validator.validate(f1, api);
+        assertTrue(result.isValid());
+        assertEquals(1, result.getConfigurationResults().get(FACTORY_PID.concat("~print")).getWarnings().size());
+
         // only update -> fail
+        api.getFactoryConfigurationDescriptions().get(FACTORY_PID).setMode(null);
         api.getFactoryConfigurationDescriptions().get(FACTORY_PID).getOperations().add(Operation.UPDATE);
         ConfigurationApi.setConfigurationApi(f1, api);
         result = validator.validate(f1, api);
         assertFalse(result.isValid());
         assertFalse(result.getConfigurationResults().get(FACTORY_PID.concat("~print")).isValid());
+
+        // only update, lenient -> warn
+        api.getFactoryConfigurationDescriptions().get(FACTORY_PID).setMode(Mode.LENIENT);
+        api.getFactoryConfigurationDescriptions().get(FACTORY_PID).getOperations().add(Operation.UPDATE);
+        ConfigurationApi.setConfigurationApi(f1, api);
+        result = validator.validate(f1, api);
+        assertTrue(result.isValid());
+        assertEquals(1, result.getConfigurationResults().get(FACTORY_PID.concat("~print")).getWarnings().size());
 
         // only create -> success
         api.getFactoryConfigurationDescriptions().get(FACTORY_PID).getOperations().clear();
@@ -592,19 +621,30 @@ public class FeatureValidatorTest {
         this.validator.setFeatureProvider(provider);
 
         // no operation -> fail
+        api.getFactoryConfigurationDescriptions().get(FACTORY_PID).setMode(null);
         api.getFactoryConfigurationDescriptions().get(FACTORY_PID).getOperations().clear();
         ConfigurationApi.setConfigurationApi(f1, api);
         FeatureValidationResult result = validator.validate(f1, api);
         assertFalse(result.isValid());
         assertFalse(result.getConfigurationResults().get(FACTORY_PID.concat("~print")).isValid());
 
+        // no operation, lenient -> warn
+        api.getFactoryConfigurationDescriptions().get(FACTORY_PID).setMode(Mode.LENIENT);
+        api.getFactoryConfigurationDescriptions().get(FACTORY_PID).getOperations().clear();
+        ConfigurationApi.setConfigurationApi(f1, api);
+        result = validator.validate(f1, api);
+        assertTrue(result.isValid());
+        assertEquals(1, result.getConfigurationResults().get(FACTORY_PID.concat("~print")).getWarnings().size());
+
         // only update -> success
+        api.getFactoryConfigurationDescriptions().get(FACTORY_PID).setMode(null);
         api.getFactoryConfigurationDescriptions().get(FACTORY_PID).getOperations().add(Operation.UPDATE);
         ConfigurationApi.setConfigurationApi(f1, api);
         result = validator.validate(f1, api);
         assertTrue(result.isValid());
 
         // only create -> fail
+        api.getFactoryConfigurationDescriptions().get(FACTORY_PID).setMode(null);
         api.getFactoryConfigurationDescriptions().get(FACTORY_PID).getOperations().clear();
         api.getFactoryConfigurationDescriptions().get(FACTORY_PID).getOperations().add(Operation.CREATE);
         ConfigurationApi.setConfigurationApi(f1, api);
@@ -612,7 +652,17 @@ public class FeatureValidatorTest {
         assertFalse(result.isValid());
         assertFalse(result.getConfigurationResults().get(FACTORY_PID.concat("~print")).isValid());
 
+        // only create, lenient -> warn
+        api.getFactoryConfigurationDescriptions().get(FACTORY_PID).setMode(Mode.LENIENT);
+        api.getFactoryConfigurationDescriptions().get(FACTORY_PID).getOperations().clear();
+        api.getFactoryConfigurationDescriptions().get(FACTORY_PID).getOperations().add(Operation.CREATE);
+        ConfigurationApi.setConfigurationApi(f1, api);
+        result = validator.validate(f1, api);
+        assertTrue(result.isValid());
+        assertEquals(1, result.getConfigurationResults().get(FACTORY_PID.concat("~print")).getWarnings().size());
+
         // update, create -> success
+        api.getFactoryConfigurationDescriptions().get(FACTORY_PID).setMode(null);
         api.getFactoryConfigurationDescriptions().get(FACTORY_PID).getOperations().clear();
         api.getFactoryConfigurationDescriptions().get(FACTORY_PID).getOperations().add(Operation.CREATE);
         api.getFactoryConfigurationDescriptions().get(FACTORY_PID).getOperations().add(Operation.UPDATE);
