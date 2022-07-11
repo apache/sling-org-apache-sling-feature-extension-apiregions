@@ -79,6 +79,8 @@ public class ConfigurationApiTest {
         entity.setRegion(Region.GLOBAL);
         entity.getFeatureToRegionCache().put(ArtifactId.parse("g:a:1"), Region.GLOBAL);
         entity.setMode(Mode.SILENT);
+        entity.getConfigurationDescriptionAdditions().put("pid", new ConfigurationDescriptionAddition());
+        entity.getFactoryConfigurationDescriptionAdditions().put("factory", new FactoryConfigurationDescriptionAddition());
         entity.clear();
         assertTrue(entity.getAttributes().isEmpty());
         assertTrue(entity.getConfigurationDescriptions().isEmpty());
@@ -89,6 +91,8 @@ public class ConfigurationApiTest {
         assertTrue(entity.getInternalFrameworkProperties().isEmpty());
         assertNull(entity.getRegion());
         assertTrue(entity.getFeatureToRegionCache().isEmpty());
+        assertTrue(entity.getConfigurationDescriptionAdditions().isEmpty());
+        assertTrue(entity.getFactoryConfigurationDescriptionAdditions().isEmpty());
         assertEquals(Mode.STRICT, entity.getMode());
     }
 
@@ -101,12 +105,17 @@ public class ConfigurationApiTest {
             "\"internal-factory-configurations\" : [\"ifactory\"],"+
             "\"internal-framework-properties\" : [\"iprop\"],"+
             "\"region\" : \"INTERNAL\","+
-            "\"region-cache\" : {\"g:a1:feature:1.0.0\" : \"INTERNAL\", \"g:a2:feature:1.7.3\" : \"GLOBAL\"}}");
+            "\"region-cache\" : {\"g:a1:feature:1.0.0\" : \"INTERNAL\", \"g:a2:feature:1.7.3\" : \"GLOBAL\"},"+
+            "\"configuration-additions\" : { \"pida\": {}},"+
+            "\"factory-configuration-additions\" : { \"factorya\": {}}"+
+            "}");
 
         final ConfigurationApi entity = new ConfigurationApi();
         entity.fromJSONObject(ext.getJSONStructure().asJsonObject());
         assertEquals(1, entity.getConfigurationDescriptions().size());
         assertEquals(1, entity.getFactoryConfigurationDescriptions().size());
+        assertEquals(1, entity.getConfigurationDescriptionAdditions().size());
+        assertEquals(1, entity.getFactoryConfigurationDescriptionAdditions().size());
         assertEquals(1, entity.getFrameworkPropertyDescriptions().size());
         assertEquals(1, entity.getInternalConfigurations().size());
         assertEquals(1, entity.getInternalFactoryConfigurations().size());
@@ -114,6 +123,8 @@ public class ConfigurationApiTest {
         assertEquals(2, entity.getFeatureToRegionCache().size());
         assertTrue(entity.getConfigurationDescriptions().containsKey("pid"));
         assertTrue(entity.getFactoryConfigurationDescriptions().containsKey("factory"));
+        assertTrue(entity.getConfigurationDescriptionAdditions().containsKey("pida"));
+        assertTrue(entity.getFactoryConfigurationDescriptionAdditions().containsKey("factorya"));
         assertTrue(entity.getFrameworkPropertyDescriptions().containsKey("prop"));
         assertTrue(entity.getInternalConfigurations().contains("ipid"));
         assertTrue(entity.getInternalFactoryConfigurations().contains("ifactory"));
@@ -130,6 +141,8 @@ public class ConfigurationApiTest {
         entity.getConfigurationDescriptions().put("pid", new ConfigurationDescription());
         entity.getFactoryConfigurationDescriptions().put("factory", new FactoryConfigurationDescription());
         entity.getFrameworkPropertyDescriptions().put("prop", new FrameworkPropertyDescription());
+        entity.getConfigurationDescriptionAdditions().put("pida", new ConfigurationDescriptionAddition());
+        entity.getFactoryConfigurationDescriptionAdditions().put("factorya", new FactoryConfigurationDescriptionAddition());
         entity.getInternalConfigurations().add("ipid");
         entity.getInternalFactoryConfigurations().add("ifactory");
         entity.getInternalFrameworkProperties().add("iprop");
@@ -146,6 +159,8 @@ public class ConfigurationApiTest {
             "\"internal-framework-properties\" : [\"iprop\"],"+
             "\"region\" : \"INTERNAL\","+
             "\"region-cache\" : {\"g:a1:feature:1.0.0\" : \"INTERNAL\", \"g:a2:feature:1.7.3\" : \"GLOBAL\"}," +
+            "\"configuration-additions\" : { \"pida\": {}},"+
+            "\"factory-configuration-additions\" : { \"factorya\": {}},"+
             "\"mode\" : \"SILENT\"}");
 
         assertEquals(ext.getJSONStructure().asJsonObject(), entity.toJSONObject());        

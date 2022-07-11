@@ -366,6 +366,29 @@ Two regions are supported for OSGi configurations, internal and global. Without 
 
 When two features are aggregated, the resulting feature is only in the internal region if both source features are in the internal region. Otherwise, the resulting aggregate is always in the global region.
 
+### Configuration Additions
+
+If two features are merged, only one feature is allowed to have a configuration description for a given PID or factory PID. To enable use cases where a feature wants to enhance an existing description, additions can be specified in the configuration API. It is allowed to add additional include values and for factory confgirations additional internal configuration names.
+
+``` json
+"configuration-api:JSON|optional" : {
+  "configuration-additions" : {
+    "org.apache.sling.engine.RequestHandling" : {
+      "properties":{
+        "someprop" : {
+          "includes" : ["additional-include"]
+        }
+      }
+    }
+  },
+  "factory-configuration-additions" : {
+    "org.apache.sling.engine.impl.InternalLogger" : {
+      "internal-names" : ["additional-name]"
+    }
+  }
+}
+```
+
 ## Artifact Rules
 
 The artifact rules extension allows to specify version rules for bundles and artifacts. For an artifact identity allowed and denied version ranges can be specified. A version range follows the OSGi version range syntax. If no ranges are specified, the artifact is not allowed. An artifact version must match at least one allowed version range and must not match any denied version range (if specified).

@@ -37,6 +37,10 @@ abstract class InternalConstants {
 
     static final String KEY_FACTORIES = "factory-configurations";
     
+    static final String KEY_CONFIGURATION_ADDITIONS = "configuration-additions";
+
+    static final String KEY_FACTORY_ADDITIONS = "factory-configuration-additions";
+
     static final String KEY_FWK_PROPERTIES = "framework-properties";
 
     static final String KEY_INTERNAL_CONFIGURATIONS = "internal-configurations";

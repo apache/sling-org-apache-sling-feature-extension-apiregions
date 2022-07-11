@@ -16,10 +16,16 @@
  */
  package org.apache.sling.feature.extension.apiregions;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+
+import java.util.Arrays;
+
+import javax.json.Json;
+import javax.json.JsonObject;
 
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
@@ -28,8 +34,12 @@ import org.apache.sling.feature.builder.BuilderContext;
 import org.apache.sling.feature.builder.FeatureBuilder;
 import org.apache.sling.feature.extension.apiregions.api.config.ConfigurationApi;
 import org.apache.sling.feature.extension.apiregions.api.config.ConfigurationDescription;
+import org.apache.sling.feature.extension.apiregions.api.config.ConfigurationDescriptionAddition;
 import org.apache.sling.feature.extension.apiregions.api.config.FactoryConfigurationDescription;
+import org.apache.sling.feature.extension.apiregions.api.config.FactoryConfigurationDescriptionAddition;
 import org.apache.sling.feature.extension.apiregions.api.config.FrameworkPropertyDescription;
+import org.apache.sling.feature.extension.apiregions.api.config.PropertyDescription;
+import org.apache.sling.feature.extension.apiregions.api.config.PropertyDescriptionAddition;
 import org.apache.sling.feature.extension.apiregions.api.config.Region;
 import org.junit.Test;
 
@@ -397,7 +407,6 @@ public class ConfigurationApiMergeHandlerTest {
         apiB.setRegion(Region.GLOBAL);
         ConfigurationApi.setConfigurationApi(featureB, apiB);
 
-
         final Feature featureC = new Feature(ArtifactId.parse("g:c:1"));
         final ConfigurationApi apiC = new ConfigurationApi();
         apiC.setRegion(Region.INTERNAL);
@@ -422,5 +431,245 @@ public class ConfigurationApiMergeHandlerTest {
         assertEquals(Region.INTERNAL, api.getFeatureToRegionCache().get(featureC.getId()));
         assertEquals(Region.INTERNAL, api.getFeatureToRegionCache().get(featureD.getId()));
         assertEquals(Region.GLOBAL, api.getFeatureToRegionCache().get(idIntermediate));
+    }
+
+    @Test public void testConfigurationAdditions() {
+        final ConfigurationDescriptionAddition cda1 = new ConfigurationDescriptionAddition();
+        final PropertyDescriptionAddition pda11 = new PropertyDescriptionAddition();
+        pda11.setIncludes(new String[] {"c"});
+        cda1.getPropertyDescriptionAdditions().put("p1", pda11);
+        final PropertyDescriptionAddition pda12 = new PropertyDescriptionAddition();
+        pda12.setIncludes(new String[] {"x"});
+        cda1.getPropertyDescriptionAdditions().put("p2", pda12);
+        final ConfigurationDescriptionAddition cda2 = new ConfigurationDescriptionAddition();
+        final PropertyDescriptionAddition pda21 = new PropertyDescriptionAddition();
+        pda21.setIncludes(new String[] {"d"});
+        cda2.getPropertyDescriptionAdditions().put("p3", pda21);
+        final PropertyDescriptionAddition pda22 = new PropertyDescriptionAddition();
+        pda22.setIncludes(new String[] {"y"});
+        cda2.getPropertyDescriptionAdditions().put("p4", pda22);
+
+        final BuilderContext context = new BuilderContext(id -> null);
+        context.addMergeExtensions(new ConfigurationApiMergeHandler());
+
+        final Feature featureA = new Feature(ArtifactId.parse("g:a:1"));
+        final ConfigurationApi apiA = new ConfigurationApi();
+        apiA.getConfigurationDescriptionAdditions().put("pid1", cda1);
+
+        final ConfigurationDescription cd1 = new ConfigurationDescription();
+        final PropertyDescription pd11 = new PropertyDescription();
+        pd11.setCardinality(-1);
+        pd11.setIncludes(new String[] {"a", "b"});
+        cd1.getPropertyDescriptions().put("p1", pd11);
+
+        final PropertyDescription pd12 = new PropertyDescription();
+        pd12.setCardinality(-1);
+        cd1.getPropertyDescriptions().put("p2", pd12);
+
+        final ConfigurationDescription cd2 = new ConfigurationDescription();
+        final PropertyDescription pd21 = new PropertyDescription();
+        pd21.setCardinality(-1);
+        pd21.setIncludes(new String[] {"a", "b"});
+        cd2.getPropertyDescriptions().put("p3", pd21);
+
+        final PropertyDescription pd22 = new PropertyDescription();
+        pd22.setCardinality(-1);
+        cd2.getPropertyDescriptions().put("p4", pd22);
+
+        apiA.getConfigurationDescriptions().put("pid1", cd1);
+        apiA.getConfigurationDescriptions().put("pid2", cd2);
+        ConfigurationApi.setConfigurationApi(featureA, apiA);
+
+        final Feature featureB = new Feature(ArtifactId.parse("g:b:1"));
+        final ConfigurationApi apiB = new ConfigurationApi();
+        apiB.getConfigurationDescriptionAdditions().put("pid2", cda2);
+        ConfigurationApi.setConfigurationApi(featureB, apiB);
+
+        final ArtifactId id = ArtifactId.parse("g:m:1");
+        final Feature result = FeatureBuilder.assemble(id, context, featureA, featureB);
+
+        final ConfigurationApi resultApi = ConfigurationApi.getConfigurationApi(result);
+        assertTrue(resultApi.getConfigurationDescriptionAdditions().isEmpty());
+        final ConfigurationDescription resultCD1 = resultApi.getConfigurationDescriptions().get("pid1");
+        assertNotNull(resultCD1);
+        final PropertyDescription resultPD11 = resultCD1.getPropertyDescriptions().get("p1");
+        assertNotNull(resultPD11);
+        assertArrayEquals(new String[] {"a", "b", "c"}, resultPD11.getIncludes());
+        final PropertyDescription resultPD12 = resultCD1.getPropertyDescriptions().get("p2");
+        assertNotNull(resultPD12);
+        assertArrayEquals(new String[] {"x"}, resultPD12.getIncludes());
+        final ConfigurationDescription resultCD2 = resultApi.getConfigurationDescriptions().get("pid2");
+        assertNotNull(resultCD2);
+        final PropertyDescription resultPD21 = resultCD2.getPropertyDescriptions().get("p3");
+        assertNotNull(resultPD21);
+        assertArrayEquals(new String[] {"a", "b", "d"}, resultPD21.getIncludes());
+        final PropertyDescription resultPD22 = resultCD2.getPropertyDescriptions().get("p4");
+        assertNotNull(resultPD22);
+        assertArrayEquals(new String[] {"y"}, resultPD22.getIncludes());
+    }
+
+    @Test public void testFactoryConfigurationAdditions() {
+        final FactoryConfigurationDescriptionAddition cda1 = new FactoryConfigurationDescriptionAddition();
+        final PropertyDescriptionAddition pda11 = new PropertyDescriptionAddition();
+        pda11.setIncludes(new String[] {"c"});
+        cda1.getPropertyDescriptionAdditions().put("p1", pda11);
+        cda1.getInternalNames().add("mrx");
+        final PropertyDescriptionAddition pda12 = new PropertyDescriptionAddition();
+        pda12.setIncludes(new String[] {"x"});
+        cda1.getPropertyDescriptionAdditions().put("p2", pda12);
+        final FactoryConfigurationDescriptionAddition cda2 = new FactoryConfigurationDescriptionAddition();
+        final PropertyDescriptionAddition pda21 = new PropertyDescriptionAddition();
+        pda21.setIncludes(new String[] {"d"});
+        cda2.getPropertyDescriptionAdditions().put("p3", pda21);
+        final PropertyDescriptionAddition pda22 = new PropertyDescriptionAddition();
+        pda22.setIncludes(new String[] {"y"});
+        cda2.getPropertyDescriptionAdditions().put("p4", pda22);
+
+        final BuilderContext context = new BuilderContext(id -> null);
+        context.addMergeExtensions(new ConfigurationApiMergeHandler());
+
+        final Feature featureA = new Feature(ArtifactId.parse("g:a:1"));
+        final ConfigurationApi apiA = new ConfigurationApi();
+        apiA.getFactoryConfigurationDescriptionAdditions().put("factory1", cda1);
+
+        final FactoryConfigurationDescription cd1 = new FactoryConfigurationDescription();
+        cd1.getInternalNames().add("i1");
+        final PropertyDescription pd11 = new PropertyDescription();
+        pd11.setCardinality(-1);
+        pd11.setIncludes(new String[] {"a", "b"});
+        cd1.getPropertyDescriptions().put("p1", pd11);
+
+        final PropertyDescription pd12 = new PropertyDescription();
+        pd12.setCardinality(-1);
+        cd1.getPropertyDescriptions().put("p2", pd12);
+
+        final FactoryConfigurationDescription cd2 = new FactoryConfigurationDescription();
+        cd2.getInternalNames().add("i2");
+        final PropertyDescription pd21 = new PropertyDescription();
+        pd21.setCardinality(-1);
+        pd21.setIncludes(new String[] {"a", "b"});
+        cd2.getPropertyDescriptions().put("p3", pd21);
+
+        final PropertyDescription pd22 = new PropertyDescription();
+        pd22.setCardinality(-1);
+        cd2.getPropertyDescriptions().put("p4", pd22);
+
+        apiA.getFactoryConfigurationDescriptions().put("factory1", cd1);
+        apiA.getFactoryConfigurationDescriptions().put("factory2", cd2);
+        ConfigurationApi.setConfigurationApi(featureA, apiA);
+
+        final Feature featureB = new Feature(ArtifactId.parse("g:b:1"));
+        final ConfigurationApi apiB = new ConfigurationApi();
+        apiB.getFactoryConfigurationDescriptionAdditions().put("factory2", cda2);
+        ConfigurationApi.setConfigurationApi(featureB, apiB);
+
+        final ArtifactId id = ArtifactId.parse("g:m:1");
+        final Feature result = FeatureBuilder.assemble(id, context, featureA, featureB);
+
+        final ConfigurationApi resultApi = ConfigurationApi.getConfigurationApi(result);
+        assertTrue(resultApi.getFactoryConfigurationDescriptionAdditions().isEmpty());
+        final FactoryConfigurationDescription resultCD1 = resultApi.getFactoryConfigurationDescriptions().get("factory1");
+        assertNotNull(resultCD1);
+        assertEquals(Arrays.asList("i1", "mrx"), resultCD1.getInternalNames());
+        final PropertyDescription resultPD11 = resultCD1.getPropertyDescriptions().get("p1");
+        assertNotNull(resultPD11);
+        assertArrayEquals(new String[] {"a", "b", "c"}, resultPD11.getIncludes());
+        final PropertyDescription resultPD12 = resultCD1.getPropertyDescriptions().get("p2");
+        assertNotNull(resultPD12);
+        assertArrayEquals(new String[] {"x"}, resultPD12.getIncludes());
+        final FactoryConfigurationDescription resultCD2 = resultApi.getFactoryConfigurationDescriptions().get("factory2");
+        assertNotNull(resultCD2);
+        assertEquals(Arrays.asList("i2"), resultCD2.getInternalNames());
+        final PropertyDescription resultPD21 = resultCD2.getPropertyDescriptions().get("p3");
+        assertNotNull(resultPD21);
+        assertArrayEquals(new String[] {"a", "b", "d"}, resultPD21.getIncludes());
+        final PropertyDescription resultPD22 = resultCD2.getPropertyDescriptions().get("p4");
+        assertNotNull(resultPD22);
+        assertArrayEquals(new String[] {"y"}, resultPD22.getIncludes());
+    }
+
+    @Test public void testConfigurationAdditionsConfigDoesNotExist() {
+        final ConfigurationDescriptionAddition cda = new ConfigurationDescriptionAddition();
+        final PropertyDescriptionAddition pda = new PropertyDescriptionAddition();
+        pda.setIncludes(new String[] {"a"});
+        cda.getPropertyDescriptionAdditions().put("p1", pda);
+
+        final FactoryConfigurationDescriptionAddition cdb = new FactoryConfigurationDescriptionAddition();
+        cdb.getPropertyDescriptionAdditions().put("p1", pda);
+
+        final BuilderContext context = new BuilderContext(id -> null);
+        context.addMergeExtensions(new ConfigurationApiMergeHandler());
+
+        final Feature featureA = new Feature(ArtifactId.parse("g:a:1"));
+        final ConfigurationApi apiA = new ConfigurationApi();
+        apiA.getConfigurationDescriptionAdditions().put("pid1", cda);
+        apiA.getFactoryConfigurationDescriptionAdditions().put("factory1", cdb);
+        ConfigurationApi.setConfigurationApi(featureA, apiA);
+
+        final Feature featureB = new Feature(ArtifactId.parse("g:b:1"));
+        final ConfigurationApi apiB = new ConfigurationApi();
+        apiB.getConfigurationDescriptionAdditions().put("pid2", cda);
+        apiB.getFactoryConfigurationDescriptionAdditions().put("factory2", cdb);
+        ConfigurationApi.setConfigurationApi(featureB, apiB);
+
+        final ArtifactId id = ArtifactId.parse("g:m:1");
+        final Feature result = FeatureBuilder.assemble(id, context, featureA, featureB);
+        final ConfigurationApi resultApi = ConfigurationApi.getConfigurationApi(result);
+        assertEquals(2, resultApi.getConfigurationDescriptionAdditions().size());
+        assertNotNull(resultApi.getConfigurationDescriptionAdditions().get("pid1"));
+        assertNotNull(resultApi.getConfigurationDescriptionAdditions().get("pid2"));
+        assertEquals(2, resultApi.getFactoryConfigurationDescriptionAdditions().size());
+        assertNotNull(resultApi.getFactoryConfigurationDescriptionAdditions().get("factory1"));
+        assertNotNull(resultApi.getFactoryConfigurationDescriptionAdditions().get("factory2"));
+    }
+
+    @Test(expected = IllegalStateException.class) 
+    public void testConfigurationAdditionsConfigPropDoesNotExist() {
+        final ConfigurationDescriptionAddition cda = new ConfigurationDescriptionAddition();
+        final PropertyDescriptionAddition pda = new PropertyDescriptionAddition();
+        pda.setIncludes(new String[] {"c"});
+        cda.getPropertyDescriptionAdditions().put("p1", pda);
+
+        final BuilderContext context = new BuilderContext(id -> null);
+        context.addMergeExtensions(new ConfigurationApiMergeHandler());
+
+        final Feature featureA = new Feature(ArtifactId.parse("g:a:1"));
+        final ConfigurationApi apiA = new ConfigurationApi();
+        final ConfigurationDescription cd = new ConfigurationDescription();
+        apiA.getConfigurationDescriptions().put("pid", cd);
+        ConfigurationApi.setConfigurationApi(featureA, apiA);
+
+        final Feature featureB = new Feature(ArtifactId.parse("g:b:1"));
+        final ConfigurationApi apiB = new ConfigurationApi();
+        apiB.getConfigurationDescriptionAdditions().put("pid", cda);
+        ConfigurationApi.setConfigurationApi(featureB, apiB);
+
+        final ArtifactId id = ArtifactId.parse("g:m:1");
+        FeatureBuilder.assemble(id, context, featureA, featureB);
+    }
+
+    @Test(expected = IllegalStateException.class) 
+    public void testConfigurationAdditionsFactoryConfigPropDoesNotExist() {
+        final FactoryConfigurationDescriptionAddition cda = new FactoryConfigurationDescriptionAddition();
+        final PropertyDescriptionAddition pda = new PropertyDescriptionAddition();
+        pda.setIncludes(new String[] {"c"});
+        cda.getPropertyDescriptionAdditions().put("p1", pda);
+
+        final BuilderContext context = new BuilderContext(id -> null);
+        context.addMergeExtensions(new ConfigurationApiMergeHandler());
+
+        final Feature featureA = new Feature(ArtifactId.parse("g:a:1"));
+        final ConfigurationApi apiA = new ConfigurationApi();
+        final FactoryConfigurationDescription cd = new FactoryConfigurationDescription();
+        apiA.getFactoryConfigurationDescriptions().put("pid", cd);
+        ConfigurationApi.setConfigurationApi(featureA, apiA);
+
+        final Feature featureB = new Feature(ArtifactId.parse("g:b:1"));
+        final ConfigurationApi apiB = new ConfigurationApi();
+        apiB.getFactoryConfigurationDescriptionAdditions().put("pid", cda);
+        ConfigurationApi.setConfigurationApi(featureB, apiB);
+
+        final ArtifactId id = ArtifactId.parse("g:m:1");
+        FeatureBuilder.assemble(id, context, featureA, featureB);
     }
 }

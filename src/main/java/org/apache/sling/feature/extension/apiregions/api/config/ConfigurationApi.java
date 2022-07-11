@@ -115,6 +115,12 @@ public class ConfigurationApi extends AttributeableEntity {
     /** The map of factory configurations */
     private final Map<String, FactoryConfigurationDescription> factories = new LinkedHashMap<>();
 
+    /** The map of configuration additions @since 1.8 */
+    private final Map<String, ConfigurationDescriptionAddition> configurationAdditions = new LinkedHashMap<>();
+
+    /** The map of factory configuration additions @since 1.8 */
+    private final Map<String, FactoryConfigurationDescriptionAddition> factoryAdditions = new LinkedHashMap<>();
+
     /** The map of framework properties */
     private final Map<String, FrameworkPropertyDescription> frameworkProperties = new LinkedHashMap<>();
 
@@ -163,6 +169,8 @@ public class ConfigurationApi extends AttributeableEntity {
         this.internalFrameworkProperties.clear();
         this.setRegion(null);
         this.getFeatureToRegionCache().clear();
+        this.getConfigurationDescriptionAdditions().clear();
+        this.getFactoryConfigurationDescriptionAdditions().clear();
     }
 
 	/**
@@ -243,6 +251,23 @@ public class ConfigurationApi extends AttributeableEntity {
                 this.setMode(Mode.valueOf(modeVal.toUpperCase()));
 			}
 
+            val = this.getAttributes().remove(InternalConstants.KEY_CONFIGURATION_ADDITIONS);
+            if ( val != null ) {
+                for(final Map.Entry<String, JsonValue> innerEntry : val.asJsonObject().entrySet()) {
+                    final ConfigurationDescriptionAddition cfg = new ConfigurationDescriptionAddition();
+                    cfg.fromJSONObject(innerEntry.getValue().asJsonObject());
+                    this.getConfigurationDescriptionAdditions().put(innerEntry.getKey(), cfg);
+                }
+            }
+
+            val = this.getAttributes().remove(InternalConstants.KEY_FACTORY_ADDITIONS);
+            if ( val != null ) {
+                for(final Map.Entry<String, JsonValue> innerEntry : val.asJsonObject().entrySet()) {
+                    final FactoryConfigurationDescriptionAddition cfg = new FactoryConfigurationDescriptionAddition();
+                    cfg.fromJSONObject(innerEntry.getValue().asJsonObject());
+                    this.getFactoryConfigurationDescriptionAdditions().put(innerEntry.getKey(), cfg);
+                }
+            }
         } catch (final JsonException | IllegalArgumentException e) {
             throw new IOException(e);
         }
@@ -458,7 +483,39 @@ public class ConfigurationApi extends AttributeableEntity {
         if ( this.getMode() != Mode.STRICT ) {
             objBuilder.add(InternalConstants.KEY_MODE, this.getMode().name());
         }
+        if ( !this.getConfigurationDescriptionAdditions().isEmpty() ) {
+            final JsonObjectBuilder propBuilder = Json.createObjectBuilder();
+            for(final Map.Entry<String, ConfigurationDescriptionAddition> entry : this.getConfigurationDescriptionAdditions().entrySet()) {
+                propBuilder.add(entry.getKey(), entry.getValue().createJson());
+            }
+            objBuilder.add(InternalConstants.KEY_CONFIGURATION_ADDITIONS, propBuilder);
+        }
+        if ( !this.getFactoryConfigurationDescriptionAdditions().isEmpty() ) {
+            final JsonObjectBuilder propBuilder = Json.createObjectBuilder();
+            for(final Map.Entry<String, FactoryConfigurationDescriptionAddition> entry : this.getFactoryConfigurationDescriptionAdditions().entrySet()) {
+                propBuilder.add(entry.getKey(), entry.getValue().createJson());
+            }
+            objBuilder.add(InternalConstants.KEY_FACTORY_ADDITIONS, propBuilder);
+        }
 
 		return objBuilder;
+    }
+
+    /**
+     * Get the map of configuration description additions
+     * @return The map, might be empty
+     * @since 1.8
+     */
+    public Map<String, ConfigurationDescriptionAddition> getConfigurationDescriptionAdditions() {
+        return this.configurationAdditions;
+    }
+
+    /**
+     * Get the map of factory configuration description additions
+     * @return The map, might be empty
+     * @since 1.8
+     */
+    public Map<String, FactoryConfigurationDescriptionAddition> getFactoryConfigurationDescriptionAdditions() {
+        return this.factoryAdditions;
     }
 }

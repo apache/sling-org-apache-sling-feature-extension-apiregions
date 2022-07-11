@@ -18,11 +18,9 @@ package org.apache.sling.feature.extension.apiregions.api.config.validation;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -40,7 +38,6 @@ import org.apache.sling.feature.extension.apiregions.api.config.FrameworkPropert
 import org.apache.sling.feature.extension.apiregions.api.config.Mode;
 import org.apache.sling.feature.extension.apiregions.api.config.Operation;
 import org.apache.sling.feature.extension.apiregions.api.config.Region;
-import org.osgi.util.converter.Converter;
 import org.osgi.util.converter.Converters;
 
 /**
