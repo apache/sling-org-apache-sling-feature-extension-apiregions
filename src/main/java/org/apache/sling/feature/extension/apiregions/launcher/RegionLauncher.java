@@ -19,6 +19,7 @@ package org.apache.sling.feature.extension.apiregions.launcher;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.Files;
 
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
@@ -50,9 +51,7 @@ public class RegionLauncher extends FrameworkLauncher
         };
 
 
-        final File base = File.createTempFile("apiregions", ".properties");
-        base.delete();
-        base.mkdirs();
+        final File base = Files.createTempDirectory("apiregions" + ".properties").toFile();
         File idbsnverFile = new File(base, IDBSNVER_FILENAME);
         File bundlesFile = new File(base, BUNDLE_FEATURE_FILENAME);
 
