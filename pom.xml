@@ -18,19 +18,19 @@
     </parent>
 
     <artifactId>org.apache.sling.feature.extension.apiregions</artifactId>
-    <version>1.6.3-SNAPSHOT</version>
+    <version>1.6.4</version>
     <name>Apache Sling Feature Model - API Regions Extension</name>
 
     <scm>
         <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-feature-extension-apiregions.git</connection>
         <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-feature-extension-apiregions.git</developerConnection>
         <url>https://gitbox.apache.org/repos/asf?p=sling-org-apache-sling-feature-extension-apiregions.git</url>
-        <tag>HEAD</tag>
+        <tag>org.apache.sling.feature.extension.apiregions-1.6.4</tag>
     </scm>
 
     <properties>
         <jdk.version>8</jdk.version>
-        <project.build.outputTimestamp>1</project.build.outputTimestamp>
+        <project.build.outputTimestamp>1670304376</project.build.outputTimestamp>
     </properties>
 
     <build>
