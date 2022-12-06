@@ -24,9 +24,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.Prototype;
@@ -352,23 +349,15 @@ public class ConfigurationApiMergeHandlerTest {
 
         final Feature featureA = new Feature(ArtifactId.parse("g:a:1"));
         final ConfigurationApi apiA = new ConfigurationApi();
-        apiA.getInternalConfigurations().add("a");
-        apiA.getInternalFactoryConfigurations().add("fa");
         apiA.getInternalFrameworkProperties().add("pa");
 
-        apiA.getInternalConfigurations().add("c");
-        apiA.getInternalFactoryConfigurations().add("fc");
         apiA.getInternalFrameworkProperties().add("pc");
         ConfigurationApi.setConfigurationApi(featureA, apiA);
         
         final Feature featureB = new Feature(ArtifactId.parse("g:b:1"));
         final ConfigurationApi apiB = new ConfigurationApi();
-        apiB.getInternalConfigurations().add("b");
-        apiB.getInternalFactoryConfigurations().add("fb");
         apiB.getInternalFrameworkProperties().add("pb");
 
-        apiB.getInternalConfigurations().add("c");
-        apiB.getInternalFactoryConfigurations().add("fc");
         apiB.getInternalFrameworkProperties().add("pc");
         ConfigurationApi.setConfigurationApi(featureB, apiB);
 
@@ -376,16 +365,6 @@ public class ConfigurationApiMergeHandlerTest {
         Feature result = FeatureBuilder.assemble(id, context, featureA, featureB);
         ConfigurationApi api = ConfigurationApi.getConfigurationApi(result);
         assertNotNull(api);
-
-        assertEquals(3, api.getInternalConfigurations().size());
-        assertTrue(api.getInternalConfigurations().contains("a"));
-        assertTrue(api.getInternalConfigurations().contains("b"));
-        assertTrue(api.getInternalConfigurations().contains("c"));
-
-        assertEquals(3, api.getInternalFactoryConfigurations().size());
-        assertTrue(api.getInternalFactoryConfigurations().contains("fa"));
-        assertTrue(api.getInternalFactoryConfigurations().contains("fb"));
-        assertTrue(api.getInternalFactoryConfigurations().contains("fc"));
 
         assertEquals(3, api.getInternalFrameworkProperties().size());
         assertTrue(api.getInternalFrameworkProperties().contains("pa"));

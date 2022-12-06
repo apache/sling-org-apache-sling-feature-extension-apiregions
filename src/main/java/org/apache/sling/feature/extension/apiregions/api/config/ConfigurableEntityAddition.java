@@ -19,13 +19,13 @@ package org.apache.sling.feature.extension.apiregions.api.config;
 import java.io.IOException;
 import java.util.Map;
 
-import javax.json.Json;
-import javax.json.JsonException;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
+import jakarta.json.Json;
+import jakarta.json.JsonException;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonValue;
 
-import org.apache.felix.cm.json.Configurations;
+import org.apache.felix.cm.json.io.Configurations;
 
 /**
  * A description of an OSGi configuration addition

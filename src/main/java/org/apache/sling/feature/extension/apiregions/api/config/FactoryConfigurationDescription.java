@@ -22,12 +22,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonException;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonException;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonValue;
 
 /**
  * Description of an OSGi factory configuration

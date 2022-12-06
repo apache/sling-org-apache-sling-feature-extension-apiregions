@@ -26,9 +26,9 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonReader;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonReader;
 
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Extension;

@@ -21,12 +21,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonString;
-import javax.json.JsonValue;
-import javax.json.JsonValue.ValueType;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonString;
+import jakarta.json.JsonValue;
+import jakarta.json.JsonValue.ValueType;
 
 import org.apache.sling.feature.ArtifactId;
 
@@ -53,11 +53,7 @@ public class ApiExport implements Comparable<ApiExport> {
 
     private static final String TOGGLE_KEY = "toggle";
 
-    private static final String PREVIOUS_KEY = "previous";
-
     private static final String PREVIOUS_ARTIFACT_ID_KEY = "previous-artifact-id";
-
-    private static final String PREVIOUS_PACKAGE_VERSION_KEY = "previous-package-version";
 
     private final String name;
 
@@ -65,13 +61,6 @@ public class ApiExport implements Comparable<ApiExport> {
 
     /** If the package is behind a toggle, this is the previous artifact containing the package not behind a toggle */
     private ArtifactId previousArtifactId;
-
-    /**
-     * If the package is behind a toggle, this is the previous version of the package not behind a toggle
-     * @deprecated
-     */
-    @Deprecated
-    private String previousPackageVersion;
 
     private final Map<String, String> properties = new HashMap<>();
 
@@ -117,28 +106,6 @@ public class ApiExport implements Comparable<ApiExport> {
     }
 
     /**
-     * Get the previous version of this package
-     * @return The previous version of this package or {@code null}
-     * @since 1.2.0
-     * @deprecated Use {@link #getPreviousArtifactId()}
-     */
-    @Deprecated
-    public String getPreviousPackageVersion() {
-        return this.previousPackageVersion;
-    }
-
-    /**
-     * Set the previous version of this package
-     * @param version The previous version of this package
-     * @since 1.2.0
-     * @deprecated Use {@link #getPreviousArtifactId()}
-     */
-    @Deprecated
-    public void setPreviousPackageVersion(final String version) {
-        this.previousPackageVersion = version;
-    }
-
-    /**
      * Get the previous artifact id containing the previous version
      *
      * @return The previous artifact id or {@code null}
@@ -156,28 +123,6 @@ public class ApiExport implements Comparable<ApiExport> {
      */
     public void setPreviousArtifactId(final ArtifactId previous) {
         this.previousArtifactId = previous;
-    }
-
-    /**
-     * Get the previous version of this api
-     *
-     * @return The previous version or {@code null}
-     * @deprecated Use {@link #getPreviousArtifactId()}
-     */
-    @Deprecated
-    public ArtifactId getPrevious() {
-        return this.getPreviousArtifactId();
-    }
-
-    /**
-     * Set the previous version
-     *
-     * @param previous Previous version
-     * @deprecated Use {@link #setPreviousArtifactId(ArtifactId)}
-     */
-    @Deprecated
-    public void setPrevious(final ArtifactId previous) {
-        this.setPreviousArtifactId(previous);
     }
 
     /**
@@ -331,7 +276,6 @@ public class ApiExport implements Comparable<ApiExport> {
     JsonValue toJSONValue() {
         final JsonValue depValue = this.deprecationToJSON();
         if (this.getToggle() == null
-            && this.getPreviousPackageVersion() == null
             && this.getPreviousArtifactId() == null
             && this.getProperties().isEmpty()
             && depValue == null ) {
@@ -341,9 +285,6 @@ public class ApiExport implements Comparable<ApiExport> {
         expBuilder.add(NAME_KEY, this.getName());
         if (this.getToggle() != null) {
             expBuilder.add(TOGGLE_KEY, this.getToggle());
-        }
-        if (this.getPreviousPackageVersion() != null) {
-            expBuilder.add(PREVIOUS_PACKAGE_VERSION_KEY, this.getPreviousPackageVersion());
         }
         if (this.getPreviousArtifactId() != null) {
             expBuilder.add(PREVIOUS_ARTIFACT_ID_KEY, this.getPreviousArtifactId().toMvnId());
@@ -387,15 +328,6 @@ public class ApiExport implements Comparable<ApiExport> {
                 } else if (TOGGLE_KEY.equals(key)) {
                     export.setToggle(expObj.getString(key));
 
-                } else if (PREVIOUS_PACKAGE_VERSION_KEY.equals(key)) {
-                    export.setPreviousPackageVersion(expObj.getString(key));
-                } else if (PREVIOUS_KEY.equals(key)) {
-                    if ( setPreviousArtifact ) {
-                        throw new IOException("Export " + export.getName() + " is defining previous artifact id twice in region "
-                                + region.getName());
-                    }
-                    export.setPreviousArtifactId(ArtifactId.parse(expObj.getString(key)));
-                    setPreviousArtifact = true;
                 } else if (PREVIOUS_ARTIFACT_ID_KEY.equals(key)) {
                     if ( setPreviousArtifact ) {
                         throw new IOException("Export " + export.getName() + " is defining previous artifact id twice in region "
@@ -426,13 +358,13 @@ public class ApiExport implements Comparable<ApiExport> {
 
     @Override
     public String toString() {
-        return "ApiExport [name=" + name + ", toggle=" + toggle + ", previousPackageVersion=" + previousPackageVersion
+        return "ApiExport [name=" + name + ", toggle=" + toggle
                 + ", previousArtifactId=" + previousArtifactId + ", properties=" + properties + "]";
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(deprecation, name, previousPackageVersion, previousArtifactId, properties, toggle);
+        return Objects.hash(deprecation, name, previousArtifactId, properties, toggle);
     }
 
     @Override
@@ -449,7 +381,7 @@ public class ApiExport implements Comparable<ApiExport> {
         ApiExport other = (ApiExport) obj;
         return Objects.equals(deprecation, other.deprecation) && Objects.equals(name, other.name)
                 && Objects.equals(previousArtifactId, other.previousArtifactId)
-                && Objects.equals(previousPackageVersion, other.previousPackageVersion) && Objects.equals(properties, other.properties)
+                && Objects.equals(properties, other.properties)
                 && Objects.equals(toggle, other.toggle);
     }
 }

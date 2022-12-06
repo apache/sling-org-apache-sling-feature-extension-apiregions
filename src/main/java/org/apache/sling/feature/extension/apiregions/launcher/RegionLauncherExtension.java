@@ -17,7 +17,7 @@
 package org.apache.sling.feature.extension.apiregions.launcher;
 
 import java.io.File;
-import javax.json.JsonArray;
+import jakarta.json.JsonArray;
 
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.extension.apiregions.api.ApiRegions;

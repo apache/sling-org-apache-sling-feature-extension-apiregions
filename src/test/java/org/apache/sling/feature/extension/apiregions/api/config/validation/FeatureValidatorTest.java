@@ -460,8 +460,8 @@ public class FeatureValidatorTest {
         assertTrue(result.isValid());
 
         // mark configurations as internal
-        api.getInternalConfigurations().add(PID);
-        api.getInternalFactoryConfigurations().add(FACTORY_PID);
+        api.getConfigurationDescriptions().put(PID, new ConfigurationDescription());
+        api.getFactoryConfigurationDescriptions().put(FACTORY_PID, new FactoryConfigurationDescription());
         ConfigurationApi.setConfigurationApi(f1, api);
 
         // global region

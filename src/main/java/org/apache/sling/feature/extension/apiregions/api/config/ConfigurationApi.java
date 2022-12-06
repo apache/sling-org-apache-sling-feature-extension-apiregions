@@ -22,12 +22,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonException;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonException;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonValue;
 
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Extension;
@@ -124,12 +124,6 @@ public class ConfigurationApi extends AttributeableEntity {
     /** The map of framework properties */
     private final Map<String, FrameworkPropertyDescription> frameworkProperties = new LinkedHashMap<>();
 
-    /** The set of internal configuration names */
-    private final Set<String> internalConfigurations = new TreeSet<>();
-
-    /** The set of internal factory configuration names */
-    private final Set<String> internalFactories = new TreeSet<>();
-
     /** The set of internal framework property names */
     private final Set<String> internalFrameworkProperties = new TreeSet<>();
 
@@ -164,8 +158,6 @@ public class ConfigurationApi extends AttributeableEntity {
         this.configurations.clear();
         this.factories.clear();
         this.frameworkProperties.clear();
-        this.internalConfigurations.clear();
-        this.internalFactories.clear();
         this.internalFrameworkProperties.clear();
         this.setRegion(null);
         this.getFeatureToRegionCache().clear();
@@ -220,14 +212,16 @@ public class ConfigurationApi extends AttributeableEntity {
             val = this.getAttributes().remove(InternalConstants.KEY_INTERNAL_CONFIGURATIONS);
             if ( val != null ) {
                 for(final JsonValue innerVal : val.asJsonArray()) {
-                    this.getInternalConfigurations().add(getString(innerVal));
+                    final ConfigurationDescription cfg = new ConfigurationDescription();
+                    this.getConfigurationDescriptions().put(getString(innerVal), cfg);
                 }
             }
 
             val = this.getAttributes().remove(InternalConstants.KEY_INTERNAL_FACTORIES);
             if ( val != null ) {
                 for(final JsonValue innerVal : val.asJsonArray()) {
-                    this.getInternalFactoryConfigurations().add(getString(innerVal));
+                    final FactoryConfigurationDescription cfg = new FactoryConfigurationDescription();
+                    this.getFactoryConfigurationDescriptions().put(getString(innerVal), cfg);
                 }
             }
 
@@ -297,26 +291,6 @@ public class ConfigurationApi extends AttributeableEntity {
 		return frameworkProperties;
 	}
 
-	/**
-     * Get the internal configuration pids
-	 * @return Mutable set of internal configuration pids
-     * @deprecated Please use empty configuration descriptions via {@link #getConfigurationDescriptions()}
-	 */
-	@Deprecated
-    public Set<String> getInternalConfigurations() {
-		return internalConfigurations;
-	}
-
-	/**
-     * Get the internal factory pids
-	 * @return Mutable set of internal factory configuration pids
-     * @deprecated Please use empty factory configuration descriptions via {@link #getFactoryConfigurationDescriptions()}
-	 */
-	@Deprecated
-    public Set<String> getInternalFactoryConfigurations() {
-		return internalFactories;
-	}
-
     /**
      * Check if the configuration is an internal configuration
      * @param pid The pid
@@ -324,12 +298,10 @@ public class ConfigurationApi extends AttributeableEntity {
      * @since 1.7.0
      */
     public boolean isInternalConfiguration(final String pid) {
-        boolean result = this.internalConfigurations.contains(pid);
-        if ( !result ) {
-            final ConfigurationDescription desc = this.configurations.get(pid);
-            if ( desc != null ) {
-                result = desc.getPropertyDescriptions().isEmpty();
-            }
+        boolean result = false;
+        final ConfigurationDescription desc = this.configurations.get(pid);
+        if ( desc != null ) {
+            result = desc.getPropertyDescriptions().isEmpty();
         }
         return result;
     }
@@ -342,14 +314,12 @@ public class ConfigurationApi extends AttributeableEntity {
      * @since 1.7.0
      */
     public boolean isInternalFactoryConfiguration(final String factoryPid, final String name) {
-        boolean result = this.internalFactories.contains(factoryPid);
-        if ( !result ) {
-            final FactoryConfigurationDescription desc = this.factories.get(factoryPid);
-            if ( desc != null ) {
-                result = desc.getPropertyDescriptions().isEmpty();
-                if ( !result && name != null ) {
-                    result = desc.getInternalNames().contains(name);
-                }
+        boolean result = false;
+        final FactoryConfigurationDescription desc = this.factories.get(factoryPid);
+        if ( desc != null ) {
+            result = desc.getPropertyDescriptions().isEmpty();
+            if ( !result && name != null ) {
+                result = desc.getInternalNames().contains(name);
             }
         }
         return result;
@@ -452,20 +422,6 @@ public class ConfigurationApi extends AttributeableEntity {
             }
             objBuilder.add(InternalConstants.KEY_FWK_PROPERTIES, propBuilder);
         }
-        if ( !this.getInternalConfigurations().isEmpty() ) {
-            final JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
-            for(final String n : this.getInternalConfigurations()) {
-                arrayBuilder.add(n);
-            }
-			objBuilder.add(InternalConstants.KEY_INTERNAL_CONFIGURATIONS, arrayBuilder);
-		}
-		if ( !this.getInternalFactoryConfigurations().isEmpty() ) {
-            final JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
-            for(final String n : this.getInternalFactoryConfigurations()) {
-                arrayBuilder.add(n);
-            }
-			objBuilder.add(InternalConstants.KEY_INTERNAL_FACTORIES, arrayBuilder);
-		}
 		if ( !this.getInternalFrameworkProperties().isEmpty() ) {
             final JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
             for(final String n : this.getInternalFrameworkProperties()) {

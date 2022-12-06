@@ -18,9 +18,9 @@ package org.apache.sling.feature.extension.apiregions.api.config;
 
 import java.io.IOException;
 
-import javax.json.JsonException;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonException;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 /**
  * Option for a property value

@@ -103,8 +103,6 @@ public class ConfigurationApiMergeHandler implements MergeHandler {
                 }
                 targetApi.getFrameworkPropertyDescriptions().put(entry.getKey(), entry.getValue());
             }
-            targetApi.getInternalConfigurations().addAll(sourceApi.getInternalConfigurations());
-            targetApi.getInternalFactoryConfigurations().addAll(sourceApi.getInternalFactoryConfigurations());
             targetApi.getInternalFrameworkProperties().addAll(sourceApi.getInternalFrameworkProperties());
 
             // update cache

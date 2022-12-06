@@ -30,9 +30,9 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Iterator;
 
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonReader;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonReader;
 
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Extension;
@@ -200,29 +200,18 @@ public class ApiRegionsTest {
         final ApiRegion global = regions.listRegions().get(0);
         assertEquals("global", global.getName());
 
-        assertEquals(3, global.listExports().size());
+        assertEquals(2, global.listExports().size());
 
         final Iterator<ApiExport> iter = global.listExports().iterator();
         final ApiExport exp1 = iter.next();
         assertEquals("org.apache.sling.global", exp1.getName());
         assertEquals("sling_enabled", exp1.getToggle());
-        assertNull(exp1.getPrevious());
         assertNull(exp1.getPreviousArtifactId());
-        assertNull(exp1.getPreviousPackageVersion());
 
         final ApiExport exp2 = iter.next();
         assertEquals("org.apache.felix.global", exp2.getName());
         assertEquals("global_enabled", exp2.getToggle());
-        assertEquals(ArtifactId.parse("org.apache.felix:api:1.1"), exp2.getPrevious());
         assertEquals(ArtifactId.parse("org.apache.felix:api:1.1"), exp2.getPreviousArtifactId());
-        assertNull(exp2.getPreviousPackageVersion());
-
-        final ApiExport exp3 = iter.next();
-        assertEquals("org.apache.felix.global.sub", exp3.getName());
-        assertEquals("global_enabled", exp3.getToggle());
-        assertEquals(ArtifactId.parse("org.apache.felix:api:1.1"), exp3.getPrevious());
-        assertEquals(ArtifactId.parse("org.apache.felix:api:1.1"), exp3.getPreviousArtifactId());
-        assertEquals("1.1", exp3.getPreviousPackageVersion());
 
         // create json and parse
         final ApiRegions regions2 = ApiRegions.parse(regions.toJSONArray());

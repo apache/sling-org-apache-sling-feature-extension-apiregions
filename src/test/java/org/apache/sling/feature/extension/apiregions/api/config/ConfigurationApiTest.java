@@ -24,7 +24,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
-import javax.json.Json;
+import jakarta.json.Json;
 
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Extension;
@@ -73,8 +73,6 @@ public class ConfigurationApiTest {
         entity.getConfigurationDescriptions().put("pid", new ConfigurationDescription());
         entity.getFactoryConfigurationDescriptions().put("factory", new FactoryConfigurationDescription());
         entity.getFrameworkPropertyDescriptions().put("prop", new FrameworkPropertyDescription());
-        entity.getInternalConfigurations().add("ipid");
-        entity.getInternalFactoryConfigurations().add("ifactory");
         entity.getInternalFrameworkProperties().add("iprop");
         entity.setRegion(Region.GLOBAL);
         entity.getFeatureToRegionCache().put(ArtifactId.parse("g:a:1"), Region.GLOBAL);
@@ -86,8 +84,6 @@ public class ConfigurationApiTest {
         assertTrue(entity.getConfigurationDescriptions().isEmpty());
         assertTrue(entity.getFactoryConfigurationDescriptions().isEmpty());
         assertTrue(entity.getFrameworkPropertyDescriptions().isEmpty());
-        assertTrue(entity.getInternalConfigurations().isEmpty());
-        assertTrue(entity.getInternalFactoryConfigurations().isEmpty());
         assertTrue(entity.getInternalFrameworkProperties().isEmpty());
         assertNull(entity.getRegion());
         assertTrue(entity.getFeatureToRegionCache().isEmpty());
@@ -101,8 +97,6 @@ public class ConfigurationApiTest {
         ext.setJSON("{ \"a\" : 5, \"configurations\" : { \"pid\": {}}, " +
             "\"factory-configurations\" : { \"factory\" : {}}," +
             "\"framework-properties\" : { \"prop\" : { \"type\" : \"STRING\"}}," +
-            "\"internal-configurations\" : [\"ipid\"],"+
-            "\"internal-factory-configurations\" : [\"ifactory\"],"+
             "\"internal-framework-properties\" : [\"iprop\"],"+
             "\"region\" : \"INTERNAL\","+
             "\"region-cache\" : {\"g:a1:feature:1.0.0\" : \"INTERNAL\", \"g:a2:feature:1.7.3\" : \"GLOBAL\"},"+
@@ -117,8 +111,6 @@ public class ConfigurationApiTest {
         assertEquals(1, entity.getConfigurationDescriptionAdditions().size());
         assertEquals(1, entity.getFactoryConfigurationDescriptionAdditions().size());
         assertEquals(1, entity.getFrameworkPropertyDescriptions().size());
-        assertEquals(1, entity.getInternalConfigurations().size());
-        assertEquals(1, entity.getInternalFactoryConfigurations().size());
         assertEquals(1, entity.getInternalFrameworkProperties().size());
         assertEquals(2, entity.getFeatureToRegionCache().size());
         assertTrue(entity.getConfigurationDescriptions().containsKey("pid"));
@@ -126,8 +118,6 @@ public class ConfigurationApiTest {
         assertTrue(entity.getConfigurationDescriptionAdditions().containsKey("pida"));
         assertTrue(entity.getFactoryConfigurationDescriptionAdditions().containsKey("factorya"));
         assertTrue(entity.getFrameworkPropertyDescriptions().containsKey("prop"));
-        assertTrue(entity.getInternalConfigurations().contains("ipid"));
-        assertTrue(entity.getInternalFactoryConfigurations().contains("ifactory"));
         assertTrue(entity.getInternalFrameworkProperties().contains("iprop"));
         assertEquals(Region.INTERNAL, entity.getRegion());
         assertEquals(Region.INTERNAL, entity.getFeatureToRegionCache().get(ArtifactId.parse("g:a1:feature:1.0.0")));
@@ -143,8 +133,6 @@ public class ConfigurationApiTest {
         entity.getFrameworkPropertyDescriptions().put("prop", new FrameworkPropertyDescription());
         entity.getConfigurationDescriptionAdditions().put("pida", new ConfigurationDescriptionAddition());
         entity.getFactoryConfigurationDescriptionAdditions().put("factorya", new FactoryConfigurationDescriptionAddition());
-        entity.getInternalConfigurations().add("ipid");
-        entity.getInternalFactoryConfigurations().add("ifactory");
         entity.getInternalFrameworkProperties().add("iprop");
         entity.setRegion(Region.INTERNAL);
         entity.getFeatureToRegionCache().put(ArtifactId.parse("g:a1:feature:1.0.0"), Region.INTERNAL);
@@ -154,8 +142,6 @@ public class ConfigurationApiTest {
         ext.setJSON("{ \"a\" : 5, \"configurations\" : { \"pid\": {}}, " +
             "\"factory-configurations\" : { \"factory\" : {}}," +
             "\"framework-properties\" : { \"prop\" : {}}," +
-            "\"internal-configurations\" : [\"ipid\"],"+
-            "\"internal-factory-configurations\" : [\"ifactory\"],"+
             "\"internal-framework-properties\" : [\"iprop\"],"+
             "\"region\" : \"INTERNAL\","+
             "\"region-cache\" : {\"g:a1:feature:1.0.0\" : \"INTERNAL\", \"g:a2:feature:1.7.3\" : \"GLOBAL\"}," +
@@ -191,11 +177,6 @@ public class ConfigurationApiTest {
         // a description without properties makes it internal
         desc.getPropertyDescriptions().clear();
         assertTrue(api.isInternalConfiguration(PID));
-
-        // and deprecated variant
-        api.getConfigurationDescriptions().clear();
-        api.getInternalConfigurations().add(PID);
-        assertTrue(api.isInternalConfiguration(PID));
     }
 
     @Test public void testIsInternalFactoryConfigurationNoName() {
@@ -213,11 +194,6 @@ public class ConfigurationApiTest {
 
         // a description without properties makes it internal
         desc.getPropertyDescriptions().clear();
-        assertTrue(api.isInternalFactoryConfiguration(FACTORYPID, null));
-
-        // and deprecated variant
-        api.getFactoryConfigurationDescriptions().clear();
-        api.getInternalFactoryConfigurations().add(FACTORYPID);
         assertTrue(api.isInternalFactoryConfiguration(FACTORYPID, null));
     }
 
@@ -242,11 +218,6 @@ public class ConfigurationApiTest {
         // a description without properties makes it internal
         desc.getInternalNames().clear();
         desc.getPropertyDescriptions().clear();
-        assertTrue(api.isInternalFactoryConfiguration(FACTORYPID, NAME));
-
-        // and deprecated variant
-        api.getFactoryConfigurationDescriptions().clear();
-        api.getInternalFactoryConfigurations().add(FACTORYPID);
         assertTrue(api.isInternalFactoryConfiguration(FACTORYPID, NAME));
     }
 }

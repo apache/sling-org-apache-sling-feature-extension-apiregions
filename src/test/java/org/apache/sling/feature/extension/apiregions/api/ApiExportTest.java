@@ -22,9 +22,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.StringReader;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonValue;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
 
 import org.junit.Test;
 

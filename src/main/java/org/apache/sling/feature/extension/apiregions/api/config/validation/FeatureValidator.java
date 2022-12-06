@@ -157,7 +157,7 @@ public class FeatureValidator {
                             }
                         }                        
 
-                    } else if ( regionInfo.region != Region.INTERNAL && api.getInternalFactoryConfigurations().contains(config.getFactoryPid())) {
+                    } else if ( regionInfo.region != Region.INTERNAL && api.isInternalFactoryConfiguration(config.getFactoryPid(), config.getName())) {
                         final ConfigurationValidationResult cvr = new ConfigurationValidationResult();
                         ConfigurationValidator.setResult(cvr, api.getMode(), desc, "Factory configuration is not " +
                                 "allowed");
@@ -168,7 +168,7 @@ public class FeatureValidator {
                     if ( desc != null ) {
                         final ConfigurationValidationResult r = configurationValidator.validate(config, desc, regionInfo.region, api.getMode());
                         result.getConfigurationResults().put(config.getPid(), r);
-                    } else if ( regionInfo.region!= Region.INTERNAL && api.getInternalConfigurations().contains(config.getPid())) {
+                    } else if ( regionInfo.region!= Region.INTERNAL && api.isInternalConfiguration(config.getPid())) {
                         final ConfigurationValidationResult cvr = new ConfigurationValidationResult();
                         ConfigurationValidator.setResult(cvr, api.getMode(), desc, "Configuration is not allowed");
                         result.getConfigurationResults().put(config.getPid(), cvr);

@@ -21,7 +21,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
-import javax.json.Json;
+import jakarta.json.Json;
 
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionState;

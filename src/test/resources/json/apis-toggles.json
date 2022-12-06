@@ -9,12 +9,6 @@
         {
             "name" : "org.apache.felix.global",
             "toggle" : "global_enabled",
-            "previous" : "org.apache.felix:api:1.1"
-        },
-        {
-            "name" : "org.apache.felix.global.sub",
-            "toggle" : "global_enabled",
-            "previous-package-version" : "1.1",
             "previous-artifact-id" : "org.apache.felix:api:1.1"
         }
       ]

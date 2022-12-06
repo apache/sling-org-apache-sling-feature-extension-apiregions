@@ -24,10 +24,10 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonValue;
 
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionState;

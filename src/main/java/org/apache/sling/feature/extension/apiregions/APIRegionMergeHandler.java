@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import javax.json.JsonArray;
+import jakarta.json.JsonArray;
 
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Extension;

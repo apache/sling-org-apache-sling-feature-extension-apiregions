@@ -18,11 +18,11 @@ package org.apache.sling.feature.extension.apiregions.api.config;
 
 import java.io.IOException;
 
-import javax.json.JsonException;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonException;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
-import org.apache.felix.cm.json.Configurations;
+import org.apache.felix.cm.json.io.Configurations;
 
 /**
  * A numerical value range

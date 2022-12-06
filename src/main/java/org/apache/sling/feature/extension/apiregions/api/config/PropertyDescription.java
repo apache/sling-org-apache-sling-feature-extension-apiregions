@@ -21,14 +21,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonException;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonException;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonValue;
 
-import org.apache.felix.cm.json.Configurations;
+import org.apache.felix.cm.json.io.Configurations;
 
 /**
  * Instances of this class represent a single configuration property

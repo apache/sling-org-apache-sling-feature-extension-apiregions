@@ -23,10 +23,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.jar.Manifest;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonReader;
-import javax.json.stream.JsonParsingException;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonReader;
+import jakarta.json.stream.JsonParsingException;
 
 import org.apache.johnzon.core.JsonReaderImpl.NothingToRead;
 import org.apache.sling.feature.Artifact;
@@ -196,13 +196,6 @@ public abstract class AbstractApiRegionsAnalyserTaskTest<T extends AbstractApiRe
             // do nothing
             return null;
         }
-
-        @Override
-        public int getBundleStartLevel() {
-            // do nothing
-            return 0;
-        }
-
     }
 
 }

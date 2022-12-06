@@ -18,9 +18,9 @@ package org.apache.sling.feature.extension.apiregions.api.artifacts;
 
 import java.io.IOException;
 
-import javax.json.JsonException;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonException;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.extension.apiregions.api.config.AttributeableEntity;
