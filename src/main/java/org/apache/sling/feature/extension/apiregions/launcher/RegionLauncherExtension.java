@@ -26,16 +26,16 @@ import org.apache.sling.feature.extension.apiregions.api.ApiRegions;
 import org.apache.sling.feature.launcher.spi.extensions.ExtensionContext;
 import org.apache.sling.feature.launcher.spi.extensions.ExtensionHandler;
 
-public class RegionLauncherExtension implements ExtensionHandler
-{
+public class RegionLauncherExtension implements ExtensionHandler {
+
     public static final String FEATURE_REGION_FILENAME = "features.properties";
     public static final String REGION_PACKAGE_FILENAME = "regions.properties";
 
     @Override
-    public boolean handle(ExtensionContext extensionContext, Extension extension) throws Exception
-    {
-        if (!extension.getName().equals(ApiRegions.EXTENSION_NAME))
+    public boolean handle(ExtensionContext extensionContext, Extension extension) throws Exception {
+        if (!extension.getName().equals(ApiRegions.EXTENSION_NAME)) {
             return false;
+        }
 
         final File base = Files.createTempDirectory("apiregions").toFile();
         final File featuresFile = new File(base, FEATURE_REGION_FILENAME);
@@ -46,8 +46,8 @@ public class RegionLauncherExtension implements ExtensionHandler
         LauncherProperties.save(LauncherProperties.getFeatureIDtoRegionsMap(apiRegions), featuresFile);
         LauncherProperties.save(LauncherProperties.getRegionNametoPackagesMap(apiRegions), regionsFile);
 
-        extensionContext.addFrameworkProperty("sling.feature.apiregions.resource." + FEATURE_REGION_FILENAME, featuresFile.toURI().toURL().toString());
-        extensionContext.addFrameworkProperty("sling.feature.apiregions.resource." + REGION_PACKAGE_FILENAME, regionsFile.toURI().toURL().toString());
+        extensionContext.addFrameworkProperty(LauncherProperties.PROPERTY_PREFIX.concat(FEATURE_REGION_FILENAME), featuresFile.toURI().toURL().toString());
+        extensionContext.addFrameworkProperty(LauncherProperties.PROPERTY_PREFIX.concat(REGION_PACKAGE_FILENAME), regionsFile.toURI().toURL().toString());
 
         return true;
     }

@@ -47,6 +47,8 @@ public class LauncherProperties
 {
     private static final String REGION_ORDER = "__region.order__";
 
+    public static final String PROPERTY_PREFIX = "sling.feature.apiregions.resource.";
+
     public static Properties getBundleIDtoBSNandVersionMap(Feature app, ArtifactProvider artifactProvider) {
         Properties result = new Properties();
 

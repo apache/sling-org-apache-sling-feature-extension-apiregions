@@ -19,6 +19,7 @@ package org.apache.sling.feature.extension.apiregions.launcher;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.net.URL;
 import java.nio.file.Files;
 
 import org.apache.sling.feature.ArtifactId;
@@ -28,43 +29,44 @@ import org.apache.sling.feature.launcher.impl.launchers.FrameworkLauncher;
 import org.apache.sling.feature.launcher.spi.LauncherPrepareContext;
 import org.apache.sling.feature.launcher.spi.LauncherRunContext;
 
-public class RegionLauncher extends FrameworkLauncher
-{
+public class RegionLauncher extends FrameworkLauncher {
+
     public static final String IDBSNVER_FILENAME = "idbsnver.properties";
     public static final String BUNDLE_FEATURE_FILENAME = "bundles.properties";
 
     @Override
-    public void prepare(LauncherPrepareContext context, ArtifactId frameworkId, Feature app) throws Exception
-    {
+    public void prepare(LauncherPrepareContext context, ArtifactId frameworkId, Feature app) throws Exception {
         super.prepare(context, frameworkId, app);
 
-        ArtifactProvider artifactProvider = id ->
-        {
-            try
-            {
+        ArtifactProvider artifactProvider = id -> {
+            try {
                 return context.getArtifactFile(id);
-            }
-            catch (IOException e)
-            {
+            } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
         };
 
+        // try to get base directory created by region launcher extension
+        final String regionFileName = app.getFrameworkProperties().get(LauncherProperties.PROPERTY_PREFIX.concat(RegionLauncherExtension.FEATURE_REGION_FILENAME));
+        final File base;
+        if (regionFileName != null) {
+            base = new File(new URL(regionFileName).toURI()).getParentFile();
+        } else {
+            base = Files.createTempDirectory("apiregions").toFile();
+        }
 
-        final File base = Files.createTempDirectory("apiregions").toFile();
         final File idbsnverFile = new File(base, IDBSNVER_FILENAME);
         final File bundlesFile = new File(base, BUNDLE_FEATURE_FILENAME);
 
         LauncherProperties.save(LauncherProperties.getBundleIDtoBSNandVersionMap(app, artifactProvider), idbsnverFile);
         LauncherProperties.save(LauncherProperties.getBundleIDtoFeaturesMap(app), bundlesFile);
 
-        app.getFrameworkProperties().put("sling.feature.apiregions.resource." + IDBSNVER_FILENAME, idbsnverFile.toURI().toURL().toString());
-        app.getFrameworkProperties().put("sling.feature.apiregions.resource." + BUNDLE_FEATURE_FILENAME, bundlesFile.toURI().toURL().toString());
+        app.getFrameworkProperties().put(LauncherProperties.PROPERTY_PREFIX.concat(IDBSNVER_FILENAME), idbsnverFile.toURI().toURL().toString());
+        app.getFrameworkProperties().put(LauncherProperties.PROPERTY_PREFIX.concat(BUNDLE_FEATURE_FILENAME), bundlesFile.toURI().toURL().toString());
     }
 
     @Override
-    public int run(LauncherRunContext context, ClassLoader cl) throws Exception
-    {
+    public int run(LauncherRunContext context, ClassLoader cl) throws Exception {
         return super.run(context, cl);
     }
 }
