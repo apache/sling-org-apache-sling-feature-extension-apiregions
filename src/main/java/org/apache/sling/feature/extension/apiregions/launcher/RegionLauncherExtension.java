@@ -17,6 +17,8 @@
 package org.apache.sling.feature.extension.apiregions.launcher;
 
 import java.io.File;
+import java.nio.file.Files;
+
 import jakarta.json.JsonArray;
 
 import org.apache.sling.feature.Extension;
@@ -35,11 +37,9 @@ public class RegionLauncherExtension implements ExtensionHandler
         if (!extension.getName().equals(ApiRegions.EXTENSION_NAME))
             return false;
 
-        final File base = File.createTempFile("apiregions", ".properties");
-        base.delete();
-        base.mkdirs();
-        File featuresFile = new File(base, FEATURE_REGION_FILENAME);
-        File regionsFile = new File(base, REGION_PACKAGE_FILENAME);
+        final File base = Files.createTempDirectory("apiregions").toFile();
+        final File featuresFile = new File(base, FEATURE_REGION_FILENAME);
+        final File regionsFile = new File(base, REGION_PACKAGE_FILENAME);
 
         final ApiRegions apiRegions = ApiRegions.parse((JsonArray) extension.getJSONStructure());
 
