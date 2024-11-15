@@ -44,7 +44,7 @@ import org.osgi.util.converter.Converters;
  * Validator to validate a feature
  */
 public class FeatureValidator {
-    
+
     private final ConfigurationValidator configurationValidator = new ConfigurationValidator();
 
     private final PropertyValidator propertyValidator = new PropertyValidator();
@@ -155,7 +155,7 @@ public class FeatureValidator {
                                 ConfigurationValidator.setResult(r, validationMode, desc, "Factory configuration with " +
                                         "name is not allowed");
                             }
-                        }                        
+                        }
 
                     } else if ( regionInfo.region != Region.INTERNAL && api.isInternalFactoryConfiguration(config.getFactoryPid(), config.getName())) {
                         final ConfigurationValidationResult cvr = new ConfigurationValidationResult();
@@ -172,8 +172,8 @@ public class FeatureValidator {
                         final ConfigurationValidationResult cvr = new ConfigurationValidationResult();
                         ConfigurationValidator.setResult(cvr, api.getMode(), desc, "Configuration is not allowed");
                         result.getConfigurationResults().put(config.getPid(), cvr);
-                    } 
-                }    
+                    }
+                }
             }
 
             // make sure a result exists
@@ -196,7 +196,7 @@ public class FeatureValidator {
                     PropertyValidator.setResult(pvr, null, api.getMode(), null, "Framework property is not allowed");
                     result.getFrameworkPropertyResults().put(frameworkProperty, pvr);
                 }
-            } 
+            }
             // make sure a result exists
             result.getFrameworkPropertyResults().computeIfAbsent(frameworkProperty, id -> new PropertyValidationResult());
         }
@@ -213,6 +213,7 @@ public class FeatureValidator {
      * @return {@code true} if a default value has been applied (the feature has been changed)
      * @since 1.2
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public boolean applyDefaultValues(final Feature feature, final FeatureValidationResult result) {
         boolean changed = false;
 
@@ -226,7 +227,7 @@ public class FeatureValidator {
                         final PropertyValidationResult pvr = entry.getValue().getPropertyResults().get(k);
                         if ( pvr != null && pvr.isUseDefaultValue() ) {
                             cfg.getProperties().remove(k);
-                            changed = true;    
+                            changed = true;
                         } else {
                             hasPrivateProperty = true;
                         }
@@ -285,13 +286,13 @@ public class FeatureValidator {
                                     for(final String val : includes) {
                                         final Object newArray = Array.newInstance(value.getClass().getComponentType(), Array.getLength(value) + 1);
                                         System.arraycopy(value, 0, newArray, 1, Array.getLength(value));
-                                        Array.set(newArray, 0, 
+                                        Array.set(newArray, 0,
                                             Converters.standardConverter().convert(val).to(value.getClass().getComponentType()));
                                         value = newArray;
                                         cfg.getProperties().put(propEntry.getKey(), value);
                                         changed = true;
                                     }
-                                } else if ( value instanceof Collection ) { 
+                                } else if ( value instanceof Collection ) {
                                     // collection
                                     final Collection c = (Collection)value;
                                     final Class collectionType = c.isEmpty() ? String.class : c.iterator().next().getClass();
@@ -314,7 +315,7 @@ public class FeatureValidator {
                                         }
                                         changed = true;
                                     }
-                                }                    
+                                }
                             } else {
                                 cfg.getProperties().remove(propEntry.getKey());
                             }
@@ -351,7 +352,7 @@ public class FeatureValidator {
     }
 
     static final class RegionInfo {
-        
+
         public Region region;
 
         public boolean isUpdate;
@@ -359,7 +360,7 @@ public class FeatureValidator {
 
     RegionInfo getRegionInfo(final Feature feature, final Configuration cfg, final Map<ArtifactId, Region> cache) {
         final RegionInfo result = new RegionInfo();
-        
+
         final List<ArtifactId> list = cfg.getFeatureOrigins();
         if ( !list.isEmpty() ) {
             boolean global = false;
