@@ -26,6 +26,34 @@ import org.apache.sling.feature.extension.apiregions.api.ApiRegions;
 import org.apache.sling.feature.launcher.spi.extensions.ExtensionContext;
 import org.apache.sling.feature.launcher.spi.extensions.ExtensionHandler;
 
+/**
+ * The {@code RegionLauncherExtension} class implements the {@code ExtensionHandler} interface
+ * to handle the API regions extension in the Sling feature model.
+ *
+ * <p>This class processes the API regions extension, generates temporary files for feature
+ * regions and region packages, and adds the corresponding framework properties to the extension context.</p>
+ *
+ * <p>It defines two constants for the filenames of the generated properties files:</p>
+ * <ul>
+ *   <li>{@link #FEATURE_REGION_FILENAME} - The filename for the feature regions properties file.</li>
+ *   <li>{@link #REGION_PACKAGE_FILENAME} - The filename for the region packages properties file.</li>
+ * </ul>
+ *
+ * <p>The {@code handle} method performs the following steps:</p>
+ * <ol>
+ *   <li>Checks if the extension name matches the expected API regions extension name.</li>
+ *   <li>Creates a temporary directory for storing the generated properties files.</li>
+ *   <li>Parses the API regions from the extension's JSON structure.</li>
+ *   <li>Saves the feature regions and region packages mappings to the respective properties files.</li>
+ *   <li>Adds the generated properties files as framework properties to the extension context.</li>
+ * </ol>
+ *
+ * @see ExtensionHandler
+ * @see ExtensionContext
+ * @see Extension
+ * @see ApiRegions
+ * @see LauncherProperties
+ */
 public class RegionLauncherExtension implements ExtensionHandler {
 
     public static final String FEATURE_REGION_FILENAME = "features.properties";

@@ -29,6 +29,37 @@ import org.apache.sling.feature.launcher.impl.launchers.FrameworkLauncher;
 import org.apache.sling.feature.launcher.spi.LauncherPrepareContext;
 import org.apache.sling.feature.launcher.spi.LauncherRunContext;
 
+/**
+ * The {@code RegionLauncher} class extends {@link FrameworkLauncher} and is responsible for preparing
+ * and running the framework with specific configurations related to API regions.
+ *
+ * <p>This class handles the creation and management of properties files that map bundle IDs to their
+ * symbolic names and versions, as well as bundle IDs to features. These properties files are used
+ * during the framework launch process.</p>
+ *
+ * <p>It overrides the {@code prepare} and {@code run} methods from {@link FrameworkLauncher} to
+ * include additional setup steps specific to API regions.</p>
+ *
+ * <p>Constants:</p>
+ * <ul>
+ *   <li>{@code IDBSNVER_FILENAME} - The filename for the properties file that maps bundle IDs to their symbolic names and versions.</li>
+ *   <li>{@code BUNDLE_FEATURE_FILENAME} - The filename for the properties file that maps bundle IDs to features.</li>
+ * </ul>
+ *
+ * <p>Methods:</p>
+ * <ul>
+ *   <li>{@code prepare(LauncherPrepareContext context, ArtifactId frameworkId, Feature app)} - Prepares the framework by creating necessary properties files and updating framework properties.</li>
+ *   <li>{@code run(LauncherRunContext context, ClassLoader cl)} - Runs the framework with the given context and class loader.</li>
+ * </ul>
+ *
+ * @see FrameworkLauncher
+ * @see LauncherPrepareContext
+ * @see LauncherRunContext
+ * @see ArtifactId
+ * @see Feature
+ * @see LauncherProperties
+ * @see RegionLauncherExtension
+ */
 public class RegionLauncher extends FrameworkLauncher {
 
     public static final String IDBSNVER_FILENAME = "idbsnver.properties";
