@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.feature.extension.apiregions.api.config;
 
@@ -28,7 +30,6 @@ import jakarta.json.JsonException;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonValue;
-
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionState;
@@ -68,17 +69,17 @@ public class ConfigurationApi extends AttributeableEntity {
      * @throws IllegalArgumentException If the extension is wrongly formatted
      */
     public static ConfigurationApi getConfigurationApi(final Extension ext) {
-        if ( ext == null ) {
+        if (ext == null) {
             return null;
         }
-        if ( ext.getType() != ExtensionType.JSON ) {
+        if (ext.getType() != ExtensionType.JSON) {
             throw new IllegalArgumentException("Extension " + ext.getName() + " must have JSON type");
         }
         try {
             final ConfigurationApi result = new ConfigurationApi();
             result.fromJSONObject(ext.getJSONStructure().asJsonObject());
             return result;
-        } catch ( final IOException ioe) {
+        } catch (final IOException ioe) {
             throw new IllegalArgumentException(ioe.getMessage(), ioe);
         }
     }
@@ -92,25 +93,25 @@ public class ConfigurationApi extends AttributeableEntity {
      */
     public static void setConfigurationApi(final Feature feature, final ConfigurationApi api) {
         Extension ext = feature.getExtensions().getByName(EXTENSION_NAME);
-        if ( api == null ) {
-            if ( ext != null ) {
+        if (api == null) {
+            if (ext != null) {
                 feature.getExtensions().remove(ext);
             }
         } else {
-            if ( ext == null ) {
+            if (ext == null) {
                 ext = new Extension(ExtensionType.JSON, EXTENSION_NAME, ExtensionState.OPTIONAL);
                 feature.getExtensions().add(ext);
             }
             try {
                 ext.setJSONStructure(api.toJSONObject());
-            } catch ( final IOException ioe) {
+            } catch (final IOException ioe) {
                 throw new IllegalArgumentException(ioe);
             }
         }
     }
 
     /** The map of configurations */
- 	private final Map<String, ConfigurationDescription> configurations = new LinkedHashMap<>();
+    private final Map<String, ConfigurationDescription> configurations = new LinkedHashMap<>();
 
     /** The map of factory configurations */
     private final Map<String, FactoryConfigurationDescription> factories = new LinkedHashMap<>();
@@ -165,26 +166,27 @@ public class ConfigurationApi extends AttributeableEntity {
         this.getFactoryConfigurationDescriptionAdditions().clear();
     }
 
-	/**
-	 * Extract the metadata from the JSON object.
-	 * This method first calls {@link #clear()}.
+    /**
+     * Extract the metadata from the JSON object.
+     * This method first calls {@link #clear()}.
      *
-	 * @param jsonObj The JSON Object
-	 * @throws IOException If JSON parsing fails
-	 */
+     * @param jsonObj The JSON Object
+     * @throws IOException If JSON parsing fails
+     */
     @Override
     public void fromJSONObject(final JsonObject jsonObj) throws IOException {
         super.fromJSONObject(jsonObj);
         try {
-			final String typeVal = this.getString(InternalConstants.KEY_REGION);
-			if ( typeVal != null ) {
+            final String typeVal = this.getString(InternalConstants.KEY_REGION);
+            if (typeVal != null) {
                 this.setRegion(Region.valueOf(typeVal.toUpperCase()));
-			}
+            }
 
             JsonValue val;
             val = this.getAttributes().remove(InternalConstants.KEY_CONFIGURATIONS);
-            if ( val != null ) {
-                for(final Map.Entry<String, JsonValue> innerEntry : val.asJsonObject().entrySet()) {
+            if (val != null) {
+                for (final Map.Entry<String, JsonValue> innerEntry :
+                        val.asJsonObject().entrySet()) {
                     final ConfigurationDescription cfg = new ConfigurationDescription();
                     cfg.fromJSONObject(innerEntry.getValue().asJsonObject());
                     this.getConfigurationDescriptions().put(innerEntry.getKey(), cfg);
@@ -192,8 +194,9 @@ public class ConfigurationApi extends AttributeableEntity {
             }
 
             val = this.getAttributes().remove(InternalConstants.KEY_FACTORIES);
-            if ( val != null ) {
-                for(final Map.Entry<String, JsonValue> innerEntry : val.asJsonObject().entrySet()) {
+            if (val != null) {
+                for (final Map.Entry<String, JsonValue> innerEntry :
+                        val.asJsonObject().entrySet()) {
                     final FactoryConfigurationDescription cfg = new FactoryConfigurationDescription();
                     cfg.fromJSONObject(innerEntry.getValue().asJsonObject());
                     this.getFactoryConfigurationDescriptions().put(innerEntry.getKey(), cfg);
@@ -201,8 +204,9 @@ public class ConfigurationApi extends AttributeableEntity {
             }
 
             val = this.getAttributes().remove(InternalConstants.KEY_FWK_PROPERTIES);
-            if ( val != null ) {
-                for(final Map.Entry<String, JsonValue> innerEntry : val.asJsonObject().entrySet()) {
+            if (val != null) {
+                for (final Map.Entry<String, JsonValue> innerEntry :
+                        val.asJsonObject().entrySet()) {
                     final FrameworkPropertyDescription cfg = new FrameworkPropertyDescription();
                     cfg.fromJSONObject(innerEntry.getValue().asJsonObject());
                     this.getFrameworkPropertyDescriptions().put(innerEntry.getKey(), cfg);
@@ -210,44 +214,49 @@ public class ConfigurationApi extends AttributeableEntity {
             }
 
             val = this.getAttributes().remove(InternalConstants.KEY_INTERNAL_CONFIGURATIONS);
-            if ( val != null ) {
-                for(final JsonValue innerVal : val.asJsonArray()) {
+            if (val != null) {
+                for (final JsonValue innerVal : val.asJsonArray()) {
                     final ConfigurationDescription cfg = new ConfigurationDescription();
                     this.getConfigurationDescriptions().put(getString(innerVal), cfg);
                 }
             }
 
             val = this.getAttributes().remove(InternalConstants.KEY_INTERNAL_FACTORIES);
-            if ( val != null ) {
-                for(final JsonValue innerVal : val.asJsonArray()) {
+            if (val != null) {
+                for (final JsonValue innerVal : val.asJsonArray()) {
                     final FactoryConfigurationDescription cfg = new FactoryConfigurationDescription();
                     this.getFactoryConfigurationDescriptions().put(getString(innerVal), cfg);
                 }
             }
 
             val = this.getAttributes().remove(InternalConstants.KEY_INTERNAL_FWK_PROPERTIES);
-            if ( val != null ) {
-                for(final JsonValue innerVal : val.asJsonArray()) {
+            if (val != null) {
+                for (final JsonValue innerVal : val.asJsonArray()) {
                     this.getInternalFrameworkProperties().add(getString(innerVal));
                 }
             }
 
             val = this.getAttributes().remove(InternalConstants.KEY_REGION_CACHE);
-            if ( val != null ) {
-                for(final Map.Entry<String, JsonValue> innerEntry : val.asJsonObject().entrySet()) {
-                    this.getFeatureToRegionCache().put(ArtifactId.parse(innerEntry.getKey()),
-                        Region.valueOf(getString(innerEntry.getValue()).toUpperCase()));
+            if (val != null) {
+                for (final Map.Entry<String, JsonValue> innerEntry :
+                        val.asJsonObject().entrySet()) {
+                    this.getFeatureToRegionCache()
+                            .put(
+                                    ArtifactId.parse(innerEntry.getKey()),
+                                    Region.valueOf(
+                                            getString(innerEntry.getValue()).toUpperCase()));
                 }
             }
 
-			final String modeVal = this.getString(InternalConstants.KEY_MODE);
-			if ( modeVal != null ) {
+            final String modeVal = this.getString(InternalConstants.KEY_MODE);
+            if (modeVal != null) {
                 this.setMode(Mode.valueOf(modeVal.toUpperCase()));
-			}
+            }
 
             val = this.getAttributes().remove(InternalConstants.KEY_CONFIGURATION_ADDITIONS);
-            if ( val != null ) {
-                for(final Map.Entry<String, JsonValue> innerEntry : val.asJsonObject().entrySet()) {
+            if (val != null) {
+                for (final Map.Entry<String, JsonValue> innerEntry :
+                        val.asJsonObject().entrySet()) {
                     final ConfigurationDescriptionAddition cfg = new ConfigurationDescriptionAddition();
                     cfg.fromJSONObject(innerEntry.getValue().asJsonObject());
                     this.getConfigurationDescriptionAdditions().put(innerEntry.getKey(), cfg);
@@ -255,8 +264,9 @@ public class ConfigurationApi extends AttributeableEntity {
             }
 
             val = this.getAttributes().remove(InternalConstants.KEY_FACTORY_ADDITIONS);
-            if ( val != null ) {
-                for(final Map.Entry<String, JsonValue> innerEntry : val.asJsonObject().entrySet()) {
+            if (val != null) {
+                for (final Map.Entry<String, JsonValue> innerEntry :
+                        val.asJsonObject().entrySet()) {
                     final FactoryConfigurationDescriptionAddition cfg = new FactoryConfigurationDescriptionAddition();
                     cfg.fromJSONObject(innerEntry.getValue().asJsonObject());
                     this.getFactoryConfigurationDescriptionAdditions().put(innerEntry.getKey(), cfg);
@@ -269,27 +279,27 @@ public class ConfigurationApi extends AttributeableEntity {
 
     /**
      * Get the configuration descriptions
-	 * @return Mutable map of configuration descriptions by pid
-	 */
-	public Map<String, ConfigurationDescription> getConfigurationDescriptions() {
-		return configurations;
-	}
+     * @return Mutable map of configuration descriptions by pid
+     */
+    public Map<String, ConfigurationDescription> getConfigurationDescriptions() {
+        return configurations;
+    }
 
-	/**
+    /**
      * Get the factory configuration descriptions
-	 * @return Mutable map of factory descriptions by factory pid
-	 */
-	public Map<String, FactoryConfigurationDescription> getFactoryConfigurationDescriptions() {
-		return factories;
-	}
+     * @return Mutable map of factory descriptions by factory pid
+     */
+    public Map<String, FactoryConfigurationDescription> getFactoryConfigurationDescriptions() {
+        return factories;
+    }
 
-	/**
+    /**
      * Get the framework properties
-	 * @return Mutable map of framework properties
-	 */
-	public Map<String, FrameworkPropertyDescription> getFrameworkPropertyDescriptions() {
-		return frameworkProperties;
-	}
+     * @return Mutable map of framework properties
+     */
+    public Map<String, FrameworkPropertyDescription> getFrameworkPropertyDescriptions() {
+        return frameworkProperties;
+    }
 
     /**
      * Check if the configuration is an internal configuration
@@ -300,7 +310,7 @@ public class ConfigurationApi extends AttributeableEntity {
     public boolean isInternalConfiguration(final String pid) {
         boolean result = false;
         final ConfigurationDescription desc = this.configurations.get(pid);
-        if ( desc != null ) {
+        if (desc != null) {
             result = desc.getPropertyDescriptions().isEmpty();
         }
         return result;
@@ -316,9 +326,9 @@ public class ConfigurationApi extends AttributeableEntity {
     public boolean isInternalFactoryConfiguration(final String factoryPid, final String name) {
         boolean result = false;
         final FactoryConfigurationDescription desc = this.factories.get(factoryPid);
-        if ( desc != null ) {
+        if (desc != null) {
             result = desc.getPropertyDescriptions().isEmpty();
-            if ( !result && name != null ) {
+            if (!result && name != null) {
                 result = desc.getInternalNames().contains(name);
             }
         }
@@ -327,10 +337,10 @@ public class ConfigurationApi extends AttributeableEntity {
 
     /**
      * Get the internal framework property names
-	 * @return Mutable set of internal framework property names
-	 */
-	public Set<String> getInternalFrameworkProperties() {
-		return internalFrameworkProperties;
+     * @return Mutable set of internal framework property names
+     */
+    public Set<String> getInternalFrameworkProperties() {
+        return internalFrameworkProperties;
     }
 
     /**
@@ -355,7 +365,7 @@ public class ConfigurationApi extends AttributeableEntity {
      * @since 1.1
      */
     public Region detectRegion() {
-        if ( this.getRegion() != null ) {
+        if (this.getRegion() != null) {
             return this.getRegion();
         }
         return Region.GLOBAL;
@@ -397,64 +407,70 @@ public class ConfigurationApi extends AttributeableEntity {
      */
     @Override
     protected JsonObjectBuilder createJson() throws IOException {
-		final JsonObjectBuilder objBuilder = super.createJson();
-        if ( this.getRegion() != null ) {
+        final JsonObjectBuilder objBuilder = super.createJson();
+        if (this.getRegion() != null) {
             objBuilder.add(InternalConstants.KEY_REGION, this.getRegion().name());
         }
-        if ( !this.getConfigurationDescriptions().isEmpty() ) {
+        if (!this.getConfigurationDescriptions().isEmpty()) {
             final JsonObjectBuilder propBuilder = Json.createObjectBuilder();
-            for(final Map.Entry<String, ConfigurationDescription> entry : this.getConfigurationDescriptions().entrySet()) {
+            for (final Map.Entry<String, ConfigurationDescription> entry :
+                    this.getConfigurationDescriptions().entrySet()) {
                 propBuilder.add(entry.getKey(), entry.getValue().createJson());
             }
             objBuilder.add(InternalConstants.KEY_CONFIGURATIONS, propBuilder);
         }
-        if ( !this.getFactoryConfigurationDescriptions().isEmpty() ) {
+        if (!this.getFactoryConfigurationDescriptions().isEmpty()) {
             final JsonObjectBuilder propBuilder = Json.createObjectBuilder();
-            for(final Map.Entry<String, FactoryConfigurationDescription> entry : this.getFactoryConfigurationDescriptions().entrySet()) {
+            for (final Map.Entry<String, FactoryConfigurationDescription> entry :
+                    this.getFactoryConfigurationDescriptions().entrySet()) {
                 propBuilder.add(entry.getKey(), entry.getValue().createJson());
             }
             objBuilder.add(InternalConstants.KEY_FACTORIES, propBuilder);
         }
-        if ( !this.getFrameworkPropertyDescriptions().isEmpty() ) {
+        if (!this.getFrameworkPropertyDescriptions().isEmpty()) {
             final JsonObjectBuilder propBuilder = Json.createObjectBuilder();
-            for(final Map.Entry<String, FrameworkPropertyDescription> entry : this.getFrameworkPropertyDescriptions().entrySet()) {
+            for (final Map.Entry<String, FrameworkPropertyDescription> entry :
+                    this.getFrameworkPropertyDescriptions().entrySet()) {
                 propBuilder.add(entry.getKey(), entry.getValue().createJson());
             }
             objBuilder.add(InternalConstants.KEY_FWK_PROPERTIES, propBuilder);
         }
-		if ( !this.getInternalFrameworkProperties().isEmpty() ) {
+        if (!this.getInternalFrameworkProperties().isEmpty()) {
             final JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
-            for(final String n : this.getInternalFrameworkProperties()) {
+            for (final String n : this.getInternalFrameworkProperties()) {
                 arrayBuilder.add(n);
             }
-			objBuilder.add(InternalConstants.KEY_INTERNAL_FWK_PROPERTIES, arrayBuilder);
+            objBuilder.add(InternalConstants.KEY_INTERNAL_FWK_PROPERTIES, arrayBuilder);
         }
-        if ( !this.getFeatureToRegionCache().isEmpty()) {
+        if (!this.getFeatureToRegionCache().isEmpty()) {
             final JsonObjectBuilder cacheBuilder = Json.createObjectBuilder();
-            for(final Map.Entry<ArtifactId, Region> entry : this.getFeatureToRegionCache().entrySet()) {
+            for (final Map.Entry<ArtifactId, Region> entry :
+                    this.getFeatureToRegionCache().entrySet()) {
                 cacheBuilder.add(entry.getKey().toMvnId(), entry.getValue().name());
             }
             objBuilder.add(InternalConstants.KEY_REGION_CACHE, cacheBuilder);
         }
-        if ( this.getMode() != Mode.STRICT ) {
+        if (this.getMode() != Mode.STRICT) {
             objBuilder.add(InternalConstants.KEY_MODE, this.getMode().name());
         }
-        if ( !this.getConfigurationDescriptionAdditions().isEmpty() ) {
+        if (!this.getConfigurationDescriptionAdditions().isEmpty()) {
             final JsonObjectBuilder propBuilder = Json.createObjectBuilder();
-            for(final Map.Entry<String, ConfigurationDescriptionAddition> entry : this.getConfigurationDescriptionAdditions().entrySet()) {
+            for (final Map.Entry<String, ConfigurationDescriptionAddition> entry :
+                    this.getConfigurationDescriptionAdditions().entrySet()) {
                 propBuilder.add(entry.getKey(), entry.getValue().createJson());
             }
             objBuilder.add(InternalConstants.KEY_CONFIGURATION_ADDITIONS, propBuilder);
         }
-        if ( !this.getFactoryConfigurationDescriptionAdditions().isEmpty() ) {
+        if (!this.getFactoryConfigurationDescriptionAdditions().isEmpty()) {
             final JsonObjectBuilder propBuilder = Json.createObjectBuilder();
-            for(final Map.Entry<String, FactoryConfigurationDescriptionAddition> entry : this.getFactoryConfigurationDescriptionAdditions().entrySet()) {
+            for (final Map.Entry<String, FactoryConfigurationDescriptionAddition> entry :
+                    this.getFactoryConfigurationDescriptionAdditions().entrySet()) {
                 propBuilder.add(entry.getKey(), entry.getValue().createJson());
             }
             objBuilder.add(InternalConstants.KEY_FACTORY_ADDITIONS, propBuilder);
         }
 
-		return objBuilder;
+        return objBuilder;
     }
 
     /**

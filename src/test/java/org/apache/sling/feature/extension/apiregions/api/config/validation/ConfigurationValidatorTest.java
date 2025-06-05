@@ -1,24 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.feature.extension.apiregions.api.config.validation;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import org.apache.sling.feature.Configuration;
 import org.apache.sling.feature.extension.apiregions.api.config.ConfigurationDescription;
@@ -30,11 +28,16 @@ import org.apache.sling.feature.extension.apiregions.api.config.Region;
 import org.junit.Test;
 import org.osgi.framework.Constants;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 public class ConfigurationValidatorTest {
 
     private final ConfigurationValidator validator = new ConfigurationValidator();
 
-    @Test public void testWrongDescriptionTypeForConfiguration() {
+    @Test
+    public void testWrongDescriptionTypeForConfiguration() {
         final Configuration cfg = new Configuration("org.apache");
         final FactoryConfigurationDescription fcd = new FactoryConfigurationDescription();
 
@@ -43,7 +46,8 @@ public class ConfigurationValidatorTest {
         assertEquals(1, result.getErrors().size());
     }
 
-    @Test public void testWrongDescriptionTypeForFactoryConfiguration() {
+    @Test
+    public void testWrongDescriptionTypeForFactoryConfiguration() {
         final Configuration cfg = new Configuration("org.apache~foo");
         final ConfigurationDescription fcd = new ConfigurationDescription();
 
@@ -52,12 +56,13 @@ public class ConfigurationValidatorTest {
         assertEquals(1, result.getErrors().size());
     }
 
-    @Test public void testDeprecated() {
+    @Test
+    public void testDeprecated() {
         final Configuration cfg = new Configuration("org.apache");
         final ConfigurationDescription cd = new ConfigurationDescription();
         final PropertyDescription prop = new PropertyDescription();
         cd.getPropertyDescriptions().put("a", prop);
-        
+
         ConfigurationValidationResult result = validator.validate(cfg, cd, null);
         assertTrue(result.isValid());
         assertTrue(result.getWarnings().isEmpty());
@@ -69,7 +74,8 @@ public class ConfigurationValidatorTest {
         assertEquals("this is deprecated", result.getWarnings().get(0));
     }
 
-    @Test public void testMessageWithEnforceAndSinceInfo() {
+    @Test
+    public void testMessageWithEnforceAndSinceInfo() {
         final Configuration cfg = new Configuration("org.apache");
         final ConfigurationDescription cd = new ConfigurationDescription();
         final PropertyDescription prop = new PropertyDescription();
@@ -85,14 +91,16 @@ public class ConfigurationValidatorTest {
         result = validator.validate(cfg, cd, null);
         assertTrue(result.isValid());
         assertFalse(result.getWarnings().isEmpty());
-        assertEquals("this is deprecated. Since : 1970-01-01. Enforced on : 1970-04-01",
+        assertEquals(
+                "this is deprecated. Since : 1970-01-01. Enforced on : 1970-04-01",
                 result.getWarnings().get(0));
     }
 
-    @Test public void testServiceRanking() {
+    @Test
+    public void testServiceRanking() {
         final Configuration cfg = new Configuration("org.apache");
         final ConfigurationDescription cd = new ConfigurationDescription();
-        cfg.getProperties().put(Constants.SERVICE_RANKING, 5); 
+        cfg.getProperties().put(Constants.SERVICE_RANKING, 5);
         final PropertyDescription prop = new PropertyDescription();
         cd.getPropertyDescriptions().put("a", prop);
 
@@ -104,7 +112,8 @@ public class ConfigurationValidatorTest {
         assertFalse(result.isValid());
     }
 
-    @Test public void testAllowedProperties() {
+    @Test
+    public void testAllowedProperties() {
         final Configuration cfg = new Configuration("org.apache");
         final ConfigurationDescription cd = new ConfigurationDescription();
         final PropertyDescription prop = new PropertyDescription();
@@ -116,7 +125,8 @@ public class ConfigurationValidatorTest {
         assertTrue(result.isValid());
     }
 
-    @Test public void testAdditionalProperties() {
+    @Test
+    public void testAdditionalProperties() {
         final Configuration cfg = new Configuration("org.apache");
         cfg.getProperties().put("a", "desc");
 
@@ -146,10 +156,10 @@ public class ConfigurationValidatorTest {
         result = validator.validate(cfg, cd, Region.GLOBAL);
         assertTrue(result.isValid());
         assertEquals(2, result.getPropertyResults().size());
-
     }
 
-    @Test public void testInvalidProperty() {
+    @Test
+    public void testInvalidProperty() {
         final Configuration cfg = new Configuration("org.apache");
         cfg.getProperties().put("a", "desc");
         cfg.getProperties().put("b", "vendor");
@@ -168,7 +178,8 @@ public class ConfigurationValidatorTest {
         assertFalse(result.getPropertyResults().get("b").isValid());
     }
 
-    @Test public void testInternalConfiguration() {
+    @Test
+    public void testInternalConfiguration() {
         // internal -> valid
         final Configuration cfg = new Configuration("org.apache");
         cfg.getProperties().put("a", "desc");
@@ -228,7 +239,8 @@ public class ConfigurationValidatorTest {
         assertTrue(result.getErrors().isEmpty());
     }
 
-    @Test public void testInternalFactoryConfiguration() {
+    @Test
+    public void testInternalFactoryConfiguration() {
         // internal -> valid
         final Configuration cfg = new Configuration("org.apache~foo");
         cfg.getProperties().put("a", "desc");

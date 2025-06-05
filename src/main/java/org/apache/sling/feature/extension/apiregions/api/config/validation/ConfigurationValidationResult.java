@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.feature.extension.apiregions.api.config.validation;
 
@@ -30,10 +32,10 @@ public class ConfigurationValidationResult {
     private final Map<String, PropertyValidationResult> propertyResults = new HashMap<>();
 
     private final List<String> errors = new ArrayList<>();
-    
+
     private final List<String> warnings = new ArrayList<>();
 
-    /** 
+    /**
      * Should the default configuration be used?
      * @since 1.3
      */
@@ -45,9 +47,9 @@ public class ConfigurationValidationResult {
      */
     public boolean isValid() {
         boolean valid = errors.isEmpty();
-        if ( valid ) {
-            for(final PropertyValidationResult r : this.propertyResults.values()) {
-                if ( !r.isValid() ) {
+        if (valid) {
+            for (final PropertyValidationResult r : this.propertyResults.values()) {
+                if (!r.isValid()) {
                     valid = false;
                     break;
                 }
@@ -63,7 +65,7 @@ public class ConfigurationValidationResult {
     public List<String> getErrors() {
         return this.errors;
     }
-    
+
     /**
      * Get a property validation result for each property of the configuration
      * @return A map of property results keyed by property name
@@ -80,21 +82,21 @@ public class ConfigurationValidationResult {
         return this.warnings;
     }
 
-	/**
+    /**
      * Should the default be used instead of the configuration values?
-	 * @return {@code true} if the default should be used.
+     * @return {@code true} if the default should be used.
      * @since 1.3
-	 */
-	public boolean isUseDefaultValue() {
-		return useDefault;
-	}
+     */
+    public boolean isUseDefaultValue() {
+        return useDefault;
+    }
 
-	/**
+    /**
      * Set whether the default values should be used
-	 * @param useDefault boolean flag
+     * @param useDefault boolean flag
      * @since 1.3
-	 */
-	public void setUseDefaultValue(final boolean useDefault) {
-		this.useDefault = useDefault;
-	}
+     */
+    public void setUseDefaultValue(final boolean useDefault) {
+        this.useDefault = useDefault;
+    }
 }

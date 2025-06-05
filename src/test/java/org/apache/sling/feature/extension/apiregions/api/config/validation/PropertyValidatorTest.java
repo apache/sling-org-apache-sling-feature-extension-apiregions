@@ -1,25 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.feature.extension.apiregions.api.config.validation;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,24 +30,29 @@ import org.apache.sling.feature.extension.apiregions.api.config.PropertyType;
 import org.apache.sling.feature.extension.apiregions.api.config.Range;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 public class PropertyValidatorTest {
-    
+
     private final PropertyValidator validator = new PropertyValidator();
-    
+
     /**
      * Helper method to validate an error based on the validation mode
      */
     private void validateError(final PropertyDescription prop, final Object value) {
         validateError(prop, value, 1);
     }
-    
+
     /**
      * Helper method to validate an error based on the validation mode
      */
     private void validateError(final PropertyDescription prop, final Object value, final int errors) {
         PropertyValidationResult result;
 
-        // error - strict mode 
+        // error - strict mode
         result = validator.validate(value, prop, Mode.STRICT);
         assertEquals(errors, result.getErrors().size());
         assertFalse(result.isValid());
@@ -76,7 +78,7 @@ public class PropertyValidatorTest {
         assertTrue(result.isUseDefaultValue());
         assertEquals(result.getDefaultValue(), prop.getDefaultValue());
 
-        // error - mode silent definitive 
+        // error - mode silent definitive
         result = validator.validate(value, prop, Mode.SILENT_DEFINITIVE);
         assertTrue(result.getWarnings().isEmpty());
         assertTrue(result.isValid());
@@ -97,7 +99,8 @@ public class PropertyValidatorTest {
         assertNull(result.getDefaultValue());
     }
 
-    @Test public void testValidateWithNull() {
+    @Test
+    public void testValidateWithNull() {
         final PropertyDescription prop = new PropertyDescription();
 
         // prop not required - no error
@@ -108,7 +111,8 @@ public class PropertyValidatorTest {
         validateError(prop, null);
     }
 
-    @Test public void testValidateBoolean() {
+    @Test
+    public void testValidateBoolean() {
         final PropertyDescription prop = new PropertyDescription();
         prop.setType(PropertyType.BOOLEAN);
 
@@ -121,29 +125,32 @@ public class PropertyValidatorTest {
         validateError(prop, 1);
     }
 
-    @Test public void testValidateByte() {
+    @Test
+    public void testValidateByte() {
         final PropertyDescription prop = new PropertyDescription();
         prop.setType(PropertyType.BYTE);
 
-        validateValid(prop, (byte)1);
+        validateValid(prop, (byte) 1);
         validateValid(prop, "1");
         validateValid(prop, 1);
 
         validateError(prop, "yes");
     }
 
-    @Test public void testValidateShort() {
+    @Test
+    public void testValidateShort() {
         final PropertyDescription prop = new PropertyDescription();
         prop.setType(PropertyType.SHORT);
 
-        validateValid(prop, (short)1);
+        validateValid(prop, (short) 1);
         validateValid(prop, "1");
         validateValid(prop, 1);
 
         validateError(prop, "yes");
     }
 
-    @Test public void testValidateInteger() {
+    @Test
+    public void testValidateInteger() {
         final PropertyDescription prop = new PropertyDescription();
         prop.setType(PropertyType.INTEGER);
 
@@ -153,7 +160,8 @@ public class PropertyValidatorTest {
         validateError(prop, "yes");
     }
 
-    @Test public void testValidateLong() {
+    @Test
+    public void testValidateLong() {
         final PropertyDescription prop = new PropertyDescription();
         prop.setType(PropertyType.LONG);
 
@@ -164,7 +172,8 @@ public class PropertyValidatorTest {
         validateError(prop, "yes");
     }
 
-    @Test public void testValidateFloat() {
+    @Test
+    public void testValidateFloat() {
         final PropertyDescription prop = new PropertyDescription();
         prop.setType(PropertyType.FLOAT);
 
@@ -175,7 +184,8 @@ public class PropertyValidatorTest {
         validateError(prop, "yes");
     }
 
-    @Test public void testValidateDouble() {
+    @Test
+    public void testValidateDouble() {
         final PropertyDescription prop = new PropertyDescription();
         prop.setType(PropertyType.DOUBLE);
 
@@ -186,7 +196,8 @@ public class PropertyValidatorTest {
         validateError(prop, "yes");
     }
 
-    @Test public void testValidateChar() {
+    @Test
+    public void testValidateChar() {
         final PropertyDescription prop = new PropertyDescription();
         prop.setType(PropertyType.CHARACTER);
 
@@ -196,7 +207,8 @@ public class PropertyValidatorTest {
         validateError(prop, "yes");
     }
 
-    @Test public void testValidateUrl() {
+    @Test
+    public void testValidateUrl() {
         final PropertyDescription prop = new PropertyDescription();
         prop.setType(PropertyType.URL);
 
@@ -205,7 +217,8 @@ public class PropertyValidatorTest {
         validateError(prop, "hello world");
     }
 
-    @Test public void testValidateEmail() {
+    @Test
+    public void testValidateEmail() {
         final PropertyDescription prop = new PropertyDescription();
         prop.setType(PropertyType.EMAIL);
 
@@ -214,7 +227,8 @@ public class PropertyValidatorTest {
         validateError(prop, "hello world");
     }
 
-    @Test public void testValidatePassword() {
+    @Test
+    public void testValidatePassword() {
         final PropertyDescription prop = new PropertyDescription();
         prop.setType(PropertyType.PASSWORD);
 
@@ -224,7 +238,8 @@ public class PropertyValidatorTest {
         validateError(prop, "secret");
     }
 
-    @Test public void testValidatePath() {
+    @Test
+    public void testValidatePath() {
         final PropertyDescription prop = new PropertyDescription();
         prop.setType(PropertyType.PATH);
 
@@ -232,8 +247,9 @@ public class PropertyValidatorTest {
 
         validateError(prop, "hello world");
     }
-    
-    @Test public void testValidateString() {
+
+    @Test
+    public void testValidateString() {
         final PropertyDescription desc = new PropertyDescription();
 
         validateValid(desc, "hello world");
@@ -254,7 +270,7 @@ public class PropertyValidatorTest {
         desc.setOptions(null);
 
         // skip if regexp
-        desc.setRegex(".*");        
+        desc.setRegex(".*");
         result = validator.validate("$[prop:KEY]", desc);
         assertTrue(result.isValid());
         assertTrue(result.isSkipped());
@@ -269,10 +285,11 @@ public class PropertyValidatorTest {
         desc.setRequired(false);
     }
 
-    @Test public void testValidateRange() {
+    @Test
+    public void testValidateRange() {
         final PropertyDescription description = new PropertyDescription();
         description.setType(PropertyType.INTEGER);
-         
+
         // no range set
         validateValid(description, 2);
 
@@ -303,9 +320,10 @@ public class PropertyValidatorTest {
         validateValid(description, 6.0);
 
         validateError(description, 7.0);
-    }   
-    
-    @Test public void testValidateRegex() {
+    }
+
+    @Test
+    public void testValidateRegex() {
         final PropertyDescription prop = new PropertyDescription();
 
         // no regex
@@ -323,7 +341,8 @@ public class PropertyValidatorTest {
         validateError(prop, "world");
     }
 
-    @Test public void testValidateOptions() {
+    @Test
+    public void testValidateOptions() {
         final PropertyDescription prop = new PropertyDescription();
 
         // no options
@@ -344,8 +363,9 @@ public class PropertyValidatorTest {
         validateError(prop, "bar");
         validateValid(prop, 7);
     }
-    
-    @Test public void testValidateList() {
+
+    @Test
+    public void testValidateList() {
         final PropertyDescription prop = new PropertyDescription();
 
         final List<Object> values = new ArrayList<>();
@@ -382,7 +402,8 @@ public class PropertyValidatorTest {
         validateValid(prop, values);
     }
 
-    @Test public void testValidateArray() {
+    @Test
+    public void testValidateArray() {
         final PropertyDescription prop = new PropertyDescription();
 
         String[] values = new String[] {"a", "b", "c"};
@@ -415,7 +436,8 @@ public class PropertyValidatorTest {
         validateValid(prop, values);
     }
 
-    @Test public void testDeprecation() {
+    @Test
+    public void testDeprecation() {
         final PropertyDescription prop = new PropertyDescription();
         prop.setDeprecated("This is deprecated");
 
@@ -425,8 +447,8 @@ public class PropertyValidatorTest {
         assertEquals("This is deprecated", result.getWarnings().get(0));
     }
 
-
-    @Test public void testEnforceOnAndSinceInMsg() {
+    @Test
+    public void testEnforceOnAndSinceInMsg() {
         final PropertyDescription prop = new PropertyDescription();
         prop.setDeprecated("Deprecated message");
         prop.setEnforceOn("1970-04-01");
@@ -435,10 +457,13 @@ public class PropertyValidatorTest {
         final PropertyValidationResult result = validator.validate("foo", prop);
         assertTrue(result.isValid());
         assertEquals(1, result.getWarnings().size());
-        assertEquals("Deprecated message. Since : 1970-01-01. Enforced on : 1970-04-01", result.getWarnings().get(0));
+        assertEquals(
+                "Deprecated message. Since : 1970-01-01. Enforced on : 1970-04-01",
+                result.getWarnings().get(0));
     }
 
-    @Test public void testPlaceholdersString() {
+    @Test
+    public void testPlaceholdersString() {
         final PropertyDescription desc = new PropertyDescription();
         desc.setType(PropertyType.PATH);
 
@@ -457,7 +482,8 @@ public class PropertyValidatorTest {
         assertTrue(result.isSkipped());
     }
 
-    @Test public void testPlaceholdersNumber() {
+    @Test
+    public void testPlaceholdersNumber() {
         final PropertyDescription desc = new PropertyDescription();
         desc.setType(PropertyType.INTEGER);
 
@@ -476,7 +502,8 @@ public class PropertyValidatorTest {
         assertTrue(result.isSkipped());
     }
 
-    @Test public void testPlaceholdersArray() {
+    @Test
+    public void testPlaceholdersArray() {
         final PropertyDescription desc = new PropertyDescription();
         desc.setType(PropertyType.INTEGER);
         desc.setCardinality(-1);
@@ -492,7 +519,8 @@ public class PropertyValidatorTest {
         assertTrue(result.isSkipped());
     }
 
-    @Test public void testPlaceholderPolicyRequire() {
+    @Test
+    public void testPlaceholderPolicyRequire() {
         final PropertyDescription desc = new PropertyDescription();
         desc.setPlaceholderPolicy(PlaceholderPolicy.REQUIRE);
 
@@ -507,7 +535,8 @@ public class PropertyValidatorTest {
         assertFalse(result.isSkipped());
     }
 
-    @Test public void testPlaceholderPolicyDeny() {
+    @Test
+    public void testPlaceholderPolicyDeny() {
         final PropertyDescription desc = new PropertyDescription();
         desc.setPlaceholderPolicy(PlaceholderPolicy.DENY);
 
@@ -527,11 +556,13 @@ public class PropertyValidatorTest {
         final PropertyDescription desc = new PropertyDescription();
         desc.setPlaceholderPolicy(PlaceholderPolicy.ALLOW);
         desc.setPlaceholderRegex("^\\w+ [^ ]+$");
-        PropertyValidationResult result = validator.validate("local $[env:AEM_EXTERNALIZER_LOCAL;default=http://localhost:4502]", desc);
+        PropertyValidationResult result =
+                validator.validate("local $[env:AEM_EXTERNALIZER_LOCAL;default=http://localhost:4502]", desc);
         assertTrue(result.isValid());
         assertFalse(result.isSkipped());
 
-        result = validator.validate("author $[env:AEM_EXTERNALIZER_LOCAL;default=http://localhost:4502] http://abc.def.com:9091", desc);
+        result = validator.validate(
+                "author $[env:AEM_EXTERNALIZER_LOCAL;default=http://localhost:4502] http://abc.def.com:9091", desc);
         assertFalse(result.isValid());
         assertFalse(result.isSkipped());
 
@@ -549,13 +580,13 @@ public class PropertyValidatorTest {
 
             final PropertyDescription desc = new PropertyDescription();
             desc.setPlaceholderPolicy(PlaceholderPolicy.DENY);
-    
+
             PropertyValidationResult result = null;
-    
+
             result = validator.validate("$[env:variable]", desc);
             assertTrue(result.isValid());
             assertFalse(result.isSkipped());
-    
+
             result = validator.validate("hello", desc);
             assertTrue(result.isValid());
             assertFalse(result.isSkipped());

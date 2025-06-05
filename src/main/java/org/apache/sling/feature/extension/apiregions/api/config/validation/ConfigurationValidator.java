@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.feature.extension.apiregions.api.config.validation;
 
@@ -40,14 +42,12 @@ import org.osgi.framework.Constants;
  * Validator to validate a configuration or factory configuration
  */
 public class ConfigurationValidator {
-    
+
     /**
      * List of properties which are always allowed
      */
-    public static final List<String> ALLOWED_PROPERTIES = Arrays.asList(Constants.SERVICE_DESCRIPTION,
-        Constants.SERVICE_VENDOR,
-        Constants.SERVICE_RANKING);
-
+    public static final List<String> ALLOWED_PROPERTIES =
+            Arrays.asList(Constants.SERVICE_DESCRIPTION, Constants.SERVICE_VENDOR, Constants.SERVICE_RANKING);
 
     private final PropertyValidator propertyValidator = new PropertyValidator();
 
@@ -76,44 +76,44 @@ public class ConfigurationValidator {
 
     /**
      * Validate a configuration
-     * 
+     *
      * @param config The OSGi configuration
-     * @param desc The configuration description 
+     * @param desc The configuration description
      * @param region The optional region for the configuration
      * @return The result
      */
-    public ConfigurationValidationResult validate(final Configuration config, final ConfigurableEntity desc, final Region region) {
+    public ConfigurationValidationResult validate(
+            final Configuration config, final ConfigurableEntity desc, final Region region) {
         return this.validate(config, desc, region, Mode.STRICT);
     }
 
     /**
      * Validate a configuration
-     * 
+     *
      * @param config The OSGi configuration
-     * @param desc The configuration description 
+     * @param desc The configuration description
      * @param region The optional region for the configuration
      * @param mode The optional validation mode. This is used if the configuration/property has no mode is set. Defaults to {@link Mode#STRICT}.
      * @return The result
      * @since 1.2
      */
-    public ConfigurationValidationResult validate(final Configuration config,
-            final ConfigurableEntity desc, 
-            final Region region,
-            final Mode mode) {
+    public ConfigurationValidationResult validate(
+            final Configuration config, final ConfigurableEntity desc, final Region region, final Mode mode) {
         final Mode validationMode = desc.getMode() != null ? desc.getMode() : (mode != null ? mode : Mode.STRICT);
-        
+
         final ConfigurationValidationResult result = new ConfigurationValidationResult();
-        if ( config.isFactoryConfiguration() ) {
-            if ( !(desc instanceof FactoryConfigurationDescription) ) {
-                result.getErrors().add("Factory configuration cannot be validated against non factory configuration description");
+        if (config.isFactoryConfiguration()) {
+            if (!(desc instanceof FactoryConfigurationDescription)) {
+                result.getErrors()
+                        .add("Factory configuration cannot be validated against non factory configuration description");
             } else {
-                if ( desc.getPropertyDescriptions().isEmpty()) {
-                    if ( region == Region.GLOBAL && !desc.isAllowAdditionalProperties() ) {
+                if (desc.getPropertyDescriptions().isEmpty()) {
+                    if (region == Region.GLOBAL && !desc.isAllowAdditionalProperties()) {
                         setResult(result, validationMode, desc, "Factory configuration is not allowed");
                         markGlobalProperties(config, result, region);
                     }
                 } else {
-                    if ( region == Region.GLOBAL && desc.getRegion() == Region.INTERNAL ) {
+                    if (region == Region.GLOBAL && desc.getRegion() == Region.INTERNAL) {
                         setResult(result, validationMode, desc, "Factory configuration is not allowed");
                         markGlobalProperties(config, result, region);
                     } else {
@@ -122,16 +122,16 @@ public class ConfigurationValidator {
                 }
             }
         } else {
-            if ( !(desc instanceof ConfigurationDescription) ) {
+            if (!(desc instanceof ConfigurationDescription)) {
                 result.getErrors().add("Configuration cannot be validated against factory configuration description");
             } else {
-                if ( desc.getPropertyDescriptions().isEmpty()) {
-                    if ( region == Region.GLOBAL && !desc.isAllowAdditionalProperties() ) {
+                if (desc.getPropertyDescriptions().isEmpty()) {
+                    if (region == Region.GLOBAL && !desc.isAllowAdditionalProperties()) {
                         setResult(result, validationMode, desc, "Configuration is not allowed");
                         markGlobalProperties(config, result, region);
                     }
                 } else {
-                    if ( region == Region.GLOBAL && desc.getRegion() == Region.INTERNAL ) {
+                    if (region == Region.GLOBAL && desc.getRegion() == Region.INTERNAL) {
                         setResult(result, validationMode, desc, "Configuration is not allowed");
                         markGlobalProperties(config, result, region);
                     } else {
@@ -141,7 +141,7 @@ public class ConfigurationValidator {
             }
         }
 
-        if ( desc.getDeprecated() != null ) {
+        if (desc.getDeprecated() != null) {
             setResult(result, Mode.LENIENT, desc, desc.getDeprecated());
         }
 
@@ -154,20 +154,20 @@ public class ConfigurationValidator {
      * @param result The result for the configuration
      * @param region The configuration region
      */
-    void markGlobalProperties(final Configuration configuration,
-            final ConfigurationValidationResult result,
-            final Region region) {
-        if ( result.isUseDefaultValue() ) {
-            final List<String> names = new ArrayList<>(Collections.list(configuration.getConfigurationProperties().keys()));
-            for(final String propName : names) {
-                 // detect the region
+    void markGlobalProperties(
+            final Configuration configuration, final ConfigurationValidationResult result, final Region region) {
+        if (result.isUseDefaultValue()) {
+            final List<String> names = new ArrayList<>(
+                    Collections.list(configuration.getConfigurationProperties().keys()));
+            for (final String propName : names) {
+                // detect the region
                 final Region propRegion = FeatureValidator.getRegionInfo(region, configuration, propName, this.cache);
-                if ( propRegion == Region.GLOBAL ) {
+                if (propRegion == Region.GLOBAL) {
                     final PropertyValidationResult pvr = new PropertyValidationResult();
                     pvr.setUseDefaultValue(true);
                     result.getPropertyResults().put(propName, pvr);
                 }
-            }    
+            }
         }
     }
 
@@ -179,15 +179,17 @@ public class ConfigurationValidator {
      * @param region The configuration region
      * @param mode The validation mode.
      */
-    void validateProperties(final Configuration configuration,
-            final ConfigurableEntity desc,  
+    void validateProperties(
+            final Configuration configuration,
+            final ConfigurableEntity desc,
             final Map<String, PropertyValidationResult> results,
             final Region region,
             final Mode mode) {
         final Dictionary<String, Object> properties = configuration.getConfigurationProperties();
 
         // validate the described properties
-        for(final Map.Entry<String, PropertyDescription> propEntry : desc.getPropertyDescriptions().entrySet()) {
+        for (final Map.Entry<String, PropertyDescription> propEntry :
+                desc.getPropertyDescriptions().entrySet()) {
             final Object value = properties.get(propEntry.getKey());
             final PropertyValidationResult result = propertyValidator.validate(value, propEntry.getValue(), mode);
             results.put(propEntry.getKey(), result);
@@ -195,60 +197,65 @@ public class ConfigurationValidator {
 
         // validate additional properties
         final Enumeration<String> keyEnum = properties.keys();
-        while ( keyEnum.hasMoreElements() ) {
+        while (keyEnum.hasMoreElements()) {
             final String propName = keyEnum.nextElement();
-            if ( !desc.getPropertyDescriptions().containsKey(propName) ) {
+            if (!desc.getPropertyDescriptions().containsKey(propName)) {
                 // detect the region
                 final Region propRegion = FeatureValidator.getRegionInfo(region, configuration, propName, this.cache);
 
                 final PropertyValidationResult result = new PropertyValidationResult();
                 results.put(propName, result);
 
-                if ( desc.getInternalPropertyNames().contains(propName ) ) {
-                    if  ( propRegion != Region.INTERNAL ) {
+                if (desc.getInternalPropertyNames().contains(propName)) {
+                    if (propRegion != Region.INTERNAL) {
                         PropertyValidator.setResult(result, null, mode, desc, "Property is not allowed");
                     }
-                } else if ( Constants.SERVICE_RANKING.equalsIgnoreCase(propName) ) {
+                } else if (Constants.SERVICE_RANKING.equalsIgnoreCase(propName)) {
                     final Object value = properties.get(propName);
-                    if ( !(value instanceof Integer) ) {
+                    if (!(value instanceof Integer)) {
                         PropertyValidator.setResult(result, 0, mode, desc, "service.ranking must be of type Integer");
-                    }    
-                } else if ( !isAllowedProperty(propName) && propRegion != Region.INTERNAL && !desc.isAllowAdditionalProperties() ) {                    
+                    }
+                } else if (!isAllowedProperty(propName)
+                        && propRegion != Region.INTERNAL
+                        && !desc.isAllowAdditionalProperties()) {
                     PropertyValidator.setResult(result, null, mode, desc, "Property is not allowed");
                 }
             }
         }
     }
 
-    static void setResult(final ConfigurationValidationResult result, final Mode validationMode,
-                          final DescribableEntity desc, final String msg) {
+    static void setResult(
+            final ConfigurationValidationResult result,
+            final Mode validationMode,
+            final DescribableEntity desc,
+            final String msg) {
         // set postfix to the message if since or enforce-on are set
         String postfixMsg = "";
-        if ( desc != null && desc.getSince() != null ) {
+        if (desc != null && desc.getSince() != null) {
             postfixMsg = postfixMsg.concat(". Since : ").concat(desc.getSince());
         }
-        if ( desc != null && desc.getEnforceOn() != null ) {
+        if (desc != null && desc.getEnforceOn() != null) {
             postfixMsg = postfixMsg.concat(". Enforced on : ").concat(desc.getEnforceOn());
         }
         String finalMsg = msg + postfixMsg;
-        if ( validationMode == Mode.STRICT ) {
+        if (validationMode == Mode.STRICT) {
             result.getErrors().add(finalMsg);
-        } else if ( validationMode == Mode.LENIENT || validationMode == Mode.DEFINITIVE ) {
+        } else if (validationMode == Mode.LENIENT || validationMode == Mode.DEFINITIVE) {
             result.getWarnings().add(finalMsg);
         }
-        if ( validationMode == Mode.DEFINITIVE || validationMode == Mode.SILENT_DEFINITIVE ) {
+        if (validationMode == Mode.DEFINITIVE || validationMode == Mode.SILENT_DEFINITIVE) {
             result.setUseDefaultValue(true);
         }
     }
 
     private boolean isAllowedProperty(final String name) {
-        for(final String allowed : ALLOWED_PROPERTIES) {
-            if ( allowed.equalsIgnoreCase(name) ) {
+        for (final String allowed : ALLOWED_PROPERTIES) {
+            if (allowed.equalsIgnoreCase(name)) {
                 return true;
             }
         }
         return false;
-    } 
+    }
 
     void setCache(Map<ArtifactId, Region> cache) {
         this.cache = cache;

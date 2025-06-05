@@ -1,29 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.feature.extension.apiregions.analyser;
-
-import org.apache.sling.feature.ArtifactId;
-import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
-import org.apache.sling.feature.extension.apiregions.api.ApiExport;
-import org.apache.sling.feature.extension.apiregions.api.ApiRegion;
-import org.apache.sling.feature.extension.apiregions.api.ApiRegions;
-import org.apache.sling.feature.scanner.BundleDescriptor;
-import org.apache.sling.feature.scanner.FeatureDescriptor;
-import org.apache.sling.feature.scanner.PackageInfo;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,6 +28,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
+import org.apache.sling.feature.extension.apiregions.api.ApiExport;
+import org.apache.sling.feature.extension.apiregions.api.ApiRegion;
+import org.apache.sling.feature.extension.apiregions.api.ApiRegions;
+import org.apache.sling.feature.scanner.BundleDescriptor;
+import org.apache.sling.feature.scanner.FeatureDescriptor;
+import org.apache.sling.feature.scanner.PackageInfo;
 
 public class CheckApiRegionsCrossFeatureDups extends AbstractApiRegionsAnalyserTask {
 
@@ -71,15 +73,14 @@ public class CheckApiRegionsCrossFeatureDups extends AbstractApiRegionsAnalyserT
         }
 
         if (definingFeatures.isEmpty()) {
-            definingFeatures = apiRegionsFeatures
-                    .stream()
-                    .map(ArtifactId::toMvnId)
-                    .collect(Collectors.toSet());
+            definingFeatures =
+                    apiRegionsFeatures.stream().map(ArtifactId::toMvnId).collect(Collectors.toSet());
         }
 
         FeatureDescriptor f = ctx.getFeatureDescriptor();
         for (BundleDescriptor bd : f.getBundleDescriptors()) {
-            List<ArtifactId> borgs = new ArrayList<>(Arrays.asList(bd.getArtifact().getFeatureOrigins()));
+            List<ArtifactId> borgs =
+                    new ArrayList<>(Arrays.asList(bd.getArtifact().getFeatureOrigins()));
             removeDefiningFeatures(definingFeatures, borgs);
 
             if (!borgs.isEmpty()) {
@@ -100,9 +101,9 @@ public class CheckApiRegionsCrossFeatureDups extends AbstractApiRegionsAnalyserT
                             reportedPackages.add(pi.getName());
 
                             String msg = "Package overlap found between region " + entry.getKey()
-                                + " and bundle " + bd.getBundleSymbolicName() + " " + bd.getBundleVersion()
-                                + " which comes from feature: " + borgs
-                                + ". Both export package: " + pi.getName();
+                                    + " and bundle " + bd.getBundleSymbolicName() + " " + bd.getBundleVersion()
+                                    + " which comes from feature: " + borgs
+                                    + ". Both export package: " + pi.getName();
                             if (matchesSet(pkgName, warningPackages)) {
                                 ctx.reportArtifactWarning(bd.getArtifact().getId(), msg);
                             } else {
@@ -121,7 +122,8 @@ public class CheckApiRegionsCrossFeatureDups extends AbstractApiRegionsAnalyserT
 
         for (BundleDescriptor bd : f.getBundleDescriptors()) {
             if (bd.getExportedPackages().contains(pi)) {
-                declaringFeatures.addAll(Arrays.asList(bd.getArtifact().getFeatureOrigins(f.getFeature().getId())));
+                declaringFeatures.addAll(Arrays.asList(
+                        bd.getArtifact().getFeatureOrigins(f.getFeature().getId())));
             }
         }
 
@@ -163,7 +165,7 @@ public class CheckApiRegionsCrossFeatureDups extends AbstractApiRegionsAnalyserT
     private boolean matchesSet(String pkg, Set<String> set) {
         for (String e : set) {
             if (e.endsWith("*")) {
-                if (pkg.startsWith(e.substring(0, e.length() - 1)) ) {
+                if (pkg.startsWith(e.substring(0, e.length() - 1))) {
                     return true;
                 }
             } else {
@@ -179,10 +181,7 @@ public class CheckApiRegionsCrossFeatureDups extends AbstractApiRegionsAnalyserT
         if (value == null) {
             return Collections.emptySet();
         } else {
-            return Arrays.asList(value.split(","))
-                .stream()
-                .map(String::trim)
-                .collect(Collectors.toSet());
+            return Arrays.asList(value.split(",")).stream().map(String::trim).collect(Collectors.toSet());
         }
     }
 }

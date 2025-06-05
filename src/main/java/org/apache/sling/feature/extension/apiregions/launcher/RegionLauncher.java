@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.feature.extension.apiregions.launcher;
 
@@ -78,7 +80,8 @@ public class RegionLauncher extends FrameworkLauncher {
         };
 
         // try to get base directory created by region launcher extension
-        final String regionFileName = app.getFrameworkProperties().get(LauncherProperties.PROPERTY_PREFIX.concat(RegionLauncherExtension.FEATURE_REGION_FILENAME));
+        final String regionFileName = app.getFrameworkProperties()
+                .get(LauncherProperties.PROPERTY_PREFIX.concat(RegionLauncherExtension.FEATURE_REGION_FILENAME));
         final File base;
         if (regionFileName != null) {
             base = new File(new URL(regionFileName).toURI()).getParentFile();
@@ -92,8 +95,14 @@ public class RegionLauncher extends FrameworkLauncher {
         LauncherProperties.save(LauncherProperties.getBundleIDtoBSNandVersionMap(app, artifactProvider), idbsnverFile);
         LauncherProperties.save(LauncherProperties.getBundleIDtoFeaturesMap(app), bundlesFile);
 
-        app.getFrameworkProperties().put(LauncherProperties.PROPERTY_PREFIX.concat(IDBSNVER_FILENAME), idbsnverFile.toURI().toURL().toString());
-        app.getFrameworkProperties().put(LauncherProperties.PROPERTY_PREFIX.concat(BUNDLE_FEATURE_FILENAME), bundlesFile.toURI().toURL().toString());
+        app.getFrameworkProperties()
+                .put(
+                        LauncherProperties.PROPERTY_PREFIX.concat(IDBSNVER_FILENAME),
+                        idbsnverFile.toURI().toURL().toString());
+        app.getFrameworkProperties()
+                .put(
+                        LauncherProperties.PROPERTY_PREFIX.concat(BUNDLE_FEATURE_FILENAME),
+                        bundlesFile.toURI().toURL().toString());
     }
 
     @Override

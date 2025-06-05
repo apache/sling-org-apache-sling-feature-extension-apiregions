@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.feature.extension.apiregions;
 
@@ -29,7 +31,6 @@ import java.util.List;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonReader;
-
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionState;
@@ -59,10 +60,7 @@ public class APIRegionMergeHandlerTest {
     @After
     public void tearDown() throws IOException {
         // Delete the temp dir again
-        Files.walk(tempDir)
-            .sorted(Comparator.reverseOrder())
-            .map(Path::toFile)
-            .forEach(File::delete);
+        Files.walk(tempDir).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
     }
 
     @Test
@@ -122,7 +120,6 @@ public class APIRegionMergeHandlerTest {
         assertEquals(expected, created);
     }
 
-
     @Test
     public void testRegionExportsNoInheritance() throws Exception {
         APIRegionMergeHandler armh = new APIRegionMergeHandler();
@@ -145,10 +142,11 @@ public class APIRegionMergeHandlerTest {
 
         Extension tgEx = tf.getExtensions().iterator().next();
 
-        String expectedJSON = "[{\"name\":\"global\",\"exports\":[\"a.b.c\",\"d.e.f\"],\"feature-origins\":[\"y:s:2\"]},"
-                + "{\"name\":\"deprecated\",\"exports\":[\"klm\",\"qrs\"],\"feature-origins\":[\"y:s:2\"]},"
-                + "{\"name\":\"internal\",\"exports\":[\"xyz\"],\"feature-origins\":[\"y:s:2\"]},"
-                + "{\"name\":\"forbidden\",\"exports\":[\"abc\",\"klm\"],\"feature-origins\":[\"y:s:2\"]}]";
+        String expectedJSON =
+                "[{\"name\":\"global\",\"exports\":[\"a.b.c\",\"d.e.f\"],\"feature-origins\":[\"y:s:2\"]},"
+                        + "{\"name\":\"deprecated\",\"exports\":[\"klm\",\"qrs\"],\"feature-origins\":[\"y:s:2\"]},"
+                        + "{\"name\":\"internal\",\"exports\":[\"xyz\"],\"feature-origins\":[\"y:s:2\"]},"
+                        + "{\"name\":\"forbidden\",\"exports\":[\"abc\",\"klm\"],\"feature-origins\":[\"y:s:2\"]}]";
         JsonReader er = Json.createReader(new StringReader(expectedJSON));
         JsonReader ar = Json.createReader(new StringReader(tgEx.getJSON()));
         JsonArray ea = er.readArray();
@@ -184,12 +182,11 @@ public class APIRegionMergeHandlerTest {
         extF2.setJSONStructure(regionsF2.toJSONArray());
         f2.getExtensions().add(extF2);
 
-
         HandlerContext hc = Mockito.mock(HandlerContext.class);
         armh.merge(hc, f1, f2, extF1, extF2);
 
         // order must be top - middle - bottom
-        final ApiRegions result = ApiRegions.parse((JsonArray)extF1.getJSONStructure());
+        final ApiRegions result = ApiRegions.parse((JsonArray) extF1.getJSONStructure());
         assertEquals(3, result.getRegionNames().size());
         assertEquals("top", result.getRegionNames().get(0));
         assertEquals("middle", result.getRegionNames().get(1));
@@ -214,7 +211,8 @@ public class APIRegionMergeHandlerTest {
                 Arrays.asList("r1", "r2", "r3", "r4", "r5", "r6"));
     }
 
-    private void testAPIRegionOrdering(List<String> targetNames, List<String> sourceNames, List<String> resultNames) throws Exception {
+    private void testAPIRegionOrdering(List<String> targetNames, List<String> sourceNames, List<String> resultNames)
+            throws Exception {
         APIRegionMergeHandler armh = new APIRegionMergeHandler();
 
         Feature f1 = new Feature(ArtifactId.fromMvnId("x:t:1"));
@@ -240,12 +238,11 @@ public class APIRegionMergeHandlerTest {
         extF2.setJSONStructure(regionsF2.toJSONArray());
         f2.getExtensions().add(extF2);
 
-
         HandlerContext hc = Mockito.mock(HandlerContext.class);
         armh.merge(hc, f1, f2, extF1, extF2);
 
         // order must be top - middle - bottom
-        final ApiRegions result = ApiRegions.parse((JsonArray)extF1.getJSONStructure());
+        final ApiRegions result = ApiRegions.parse((JsonArray) extF1.getJSONStructure());
 
         List<String> actualNames = new ArrayList<>();
         for (String s : result.getRegionNames()) {

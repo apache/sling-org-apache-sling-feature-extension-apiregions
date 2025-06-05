@@ -1,32 +1,33 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.feature.extension.apiregions.api;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.StringReader;
 
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonValue;
-
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class ApiExportTest {
 
@@ -46,9 +47,9 @@ public class ApiExportTest {
 
     private JsonObject getJson(final String text) {
         try (final StringReader reader = new StringReader(text)) {
-           return Json.createReader(reader).readObject();
+            return Json.createReader(reader).readObject();
         }
-   }
+    }
 
     @Test
     public void testPackageDeprecationSimpleMessage() throws Exception {
@@ -116,7 +117,8 @@ public class ApiExportTest {
 
     @Test
     public void testComplexMembers() throws Exception {
-        final JsonValue jv = getJson("{\"members\":{\"foo\":{\"msg\":\"" + MSG + "\"},\"bar\":{\"msg\":\""+MSG+MSG+"\",\"since\":\""+SINCE+"\"}}}");
+        final JsonValue jv = getJson("{\"members\":{\"foo\":{\"msg\":\"" + MSG + "\"},\"bar\":{\"msg\":\"" + MSG + MSG
+                + "\",\"since\":\"" + SINCE + "\"}}}");
 
         final ApiExport exp = new ApiExport(PCK);
         exp.parseDeprecation(jv);
@@ -132,13 +134,15 @@ public class ApiExportTest {
         assertEquals(SINCE, bar.getSince());
 
         // the expected JSON is actually a mixed JSON (not the input!)
-        final JsonValue expJV = getJson("{\"members\":{\"foo\":\"" + MSG + "\",\"bar\":{\"msg\":\""+MSG+MSG+"\",\"since\":\""+SINCE+"\"}}}");
+        final JsonValue expJV = getJson("{\"members\":{\"foo\":\"" + MSG + "\",\"bar\":{\"msg\":\"" + MSG + MSG
+                + "\",\"since\":\"" + SINCE + "\"}}}");
         assertEquals(expJV, exp.deprecationToJSON());
     }
 
     @Test
     public void testMixedMembers() throws Exception {
-        final JsonValue jv = getJson("{\"members\":{\"foo\":\"" + MSG + "\",\"bar\":{\"msg\":\""+MSG+MSG+"\",\"since\":\""+SINCE+"\"}}}");
+        final JsonValue jv = getJson("{\"members\":{\"foo\":\"" + MSG + "\",\"bar\":{\"msg\":\"" + MSG + MSG
+                + "\",\"since\":\"" + SINCE + "\"}}}");
 
         final ApiExport exp = new ApiExport(PCK);
         exp.parseDeprecation(jv);
@@ -158,12 +162,15 @@ public class ApiExportTest {
 
     @Test
     public void testMode() throws Exception {
-        final JsonValue jv = getJson("{\"msg\":\"" + MSG + "\",\"mode\":\"" + DeprecationValidationMode.STRICT.name() + "\"}");
+        final JsonValue jv =
+                getJson("{\"msg\":\"" + MSG + "\",\"mode\":\"" + DeprecationValidationMode.STRICT.name() + "\"}");
 
         final ApiExport exp = new ApiExport(PCK);
         exp.parseDeprecation(jv);
 
-        assertEquals(DeprecationValidationMode.STRICT, exp.getDeprecation().getPackageInfo().getMode());
+        assertEquals(
+                DeprecationValidationMode.STRICT,
+                exp.getDeprecation().getPackageInfo().getMode());
 
         assertEquals(jv, exp.deprecationToJSON());
     }

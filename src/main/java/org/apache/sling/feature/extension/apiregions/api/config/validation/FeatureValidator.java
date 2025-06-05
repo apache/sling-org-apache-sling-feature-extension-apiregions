@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.feature.extension.apiregions.api.config.validation;
 
@@ -118,57 +120,72 @@ public class FeatureValidator {
      */
     public FeatureValidationResult validate(final Feature feature, final ConfigurationApi api) {
         final FeatureValidationResult result = new FeatureValidationResult();
-        if ( api == null ) {
+        if (api == null) {
             throw new IllegalArgumentException();
         }
         cache.putAll(api.getFeatureToRegionCache());
         cache.put(feature.getId(), api.detectRegion());
 
-        for(final Configuration config : feature.getConfigurations()) {
+        for (final Configuration config : feature.getConfigurations()) {
             final RegionInfo regionInfo = getRegionInfo(feature, config, cache);
 
-            if ( regionInfo == null ) {
+            if (regionInfo == null) {
                 final ConfigurationValidationResult cvr = new ConfigurationValidationResult();
                 cvr.getErrors().add("Unable to properly validate configuration, region info cannot be determined");
                 result.getConfigurationResults().put(config.getPid(), cvr);
             } else {
-                if ( config.isFactoryConfiguration() ) {
-                    final FactoryConfigurationDescription desc = api.getFactoryConfigurationDescriptions().get(config.getFactoryPid());
-                    if ( desc != null ) {
+                if (config.isFactoryConfiguration()) {
+                    final FactoryConfigurationDescription desc =
+                            api.getFactoryConfigurationDescriptions().get(config.getFactoryPid());
+                    if (desc != null) {
                         final Mode validationMode = desc.getMode() != null ? desc.getMode() : api.getMode();
-                        final ConfigurationValidationResult r = configurationValidator.validate(config, desc, regionInfo.region, api.getMode());
+                        final ConfigurationValidationResult r =
+                                configurationValidator.validate(config, desc, regionInfo.region, api.getMode());
                         result.getConfigurationResults().put(config.getPid(), r);
-                        if ( regionInfo.region != Region.INTERNAL ) {
-                            if ( desc.getOperations().isEmpty() ) {
-                                ConfigurationValidator.setResult(r, validationMode, desc, "No operations allowed for " +
-                                        "factory configuration");
+                        if (regionInfo.region != Region.INTERNAL) {
+                            if (desc.getOperations().isEmpty()) {
+                                ConfigurationValidator.setResult(
+                                        r,
+                                        validationMode,
+                                        desc,
+                                        "No operations allowed for " + "factory configuration");
                             } else {
-                                if ( regionInfo.isUpdate && !desc.getOperations().contains(Operation.UPDATE)) {
-                                    ConfigurationValidator.setResult(r, validationMode, desc, "Updating of factory " +
-                                            "configuration is not allowed");
-                                } else if ( !regionInfo.isUpdate && !desc.getOperations().contains(Operation.CREATE)) {
-                                    ConfigurationValidator.setResult(r, validationMode, desc, "Creation of factory " +
-                                            "configuration is not allowed");
+                                if (regionInfo.isUpdate && !desc.getOperations().contains(Operation.UPDATE)) {
+                                    ConfigurationValidator.setResult(
+                                            r,
+                                            validationMode,
+                                            desc,
+                                            "Updating of factory " + "configuration is not allowed");
+                                } else if (!regionInfo.isUpdate
+                                        && !desc.getOperations().contains(Operation.CREATE)) {
+                                    ConfigurationValidator.setResult(
+                                            r,
+                                            validationMode,
+                                            desc,
+                                            "Creation of factory " + "configuration is not allowed");
                                 }
                             }
-                            if ( desc.getInternalNames().contains(config.getName())) {
-                                ConfigurationValidator.setResult(r, validationMode, desc, "Factory configuration with " +
-                                        "name is not allowed");
+                            if (desc.getInternalNames().contains(config.getName())) {
+                                ConfigurationValidator.setResult(
+                                        r, validationMode, desc, "Factory configuration with " + "name is not allowed");
                             }
                         }
 
-                    } else if ( regionInfo.region != Region.INTERNAL && api.isInternalFactoryConfiguration(config.getFactoryPid(), config.getName())) {
+                    } else if (regionInfo.region != Region.INTERNAL
+                            && api.isInternalFactoryConfiguration(config.getFactoryPid(), config.getName())) {
                         final ConfigurationValidationResult cvr = new ConfigurationValidationResult();
-                        ConfigurationValidator.setResult(cvr, api.getMode(), desc, "Factory configuration is not " +
-                                "allowed");
+                        ConfigurationValidator.setResult(
+                                cvr, api.getMode(), desc, "Factory configuration is not " + "allowed");
                         result.getConfigurationResults().put(config.getPid(), cvr);
                     }
                 } else {
-                    final ConfigurationDescription desc = api.getConfigurationDescriptions().get(config.getPid());
-                    if ( desc != null ) {
-                        final ConfigurationValidationResult r = configurationValidator.validate(config, desc, regionInfo.region, api.getMode());
+                    final ConfigurationDescription desc =
+                            api.getConfigurationDescriptions().get(config.getPid());
+                    if (desc != null) {
+                        final ConfigurationValidationResult r =
+                                configurationValidator.validate(config, desc, regionInfo.region, api.getMode());
                         result.getConfigurationResults().put(config.getPid(), r);
-                    } else if ( regionInfo.region!= Region.INTERNAL && api.isInternalConfiguration(config.getPid())) {
+                    } else if (regionInfo.region != Region.INTERNAL && api.isInternalConfiguration(config.getPid())) {
                         final ConfigurationValidationResult cvr = new ConfigurationValidationResult();
                         ConfigurationValidator.setResult(cvr, api.getMode(), desc, "Configuration is not allowed");
                         result.getConfigurationResults().put(config.getPid(), cvr);
@@ -177,28 +194,33 @@ public class FeatureValidator {
             }
 
             // make sure a result exists
-            result.getConfigurationResults().computeIfAbsent(config.getPid(), id -> new ConfigurationValidationResult());
+            result.getConfigurationResults()
+                    .computeIfAbsent(config.getPid(), id -> new ConfigurationValidationResult());
         }
 
-        for(final String frameworkProperty : feature.getFrameworkProperties().keySet()) {
+        for (final String frameworkProperty : feature.getFrameworkProperties().keySet()) {
             final RegionInfo regionInfo = getRegionInfo(feature, frameworkProperty, cache);
-            if ( regionInfo == null ) {
+            if (regionInfo == null) {
                 final PropertyValidationResult pvr = new PropertyValidationResult();
                 pvr.getErrors().add("Unable to properly validate framework property, region info cannot be determined");
                 result.getFrameworkPropertyResults().put(frameworkProperty, pvr);
             } else {
-                final FrameworkPropertyDescription fpd = api.getFrameworkPropertyDescriptions().get(frameworkProperty);
-                if ( fpd != null ) {
-                    final PropertyValidationResult pvr = propertyValidator.validate(feature.getFrameworkProperties().get(frameworkProperty), fpd, api.getMode());
+                final FrameworkPropertyDescription fpd =
+                        api.getFrameworkPropertyDescriptions().get(frameworkProperty);
+                if (fpd != null) {
+                    final PropertyValidationResult pvr = propertyValidator.validate(
+                            feature.getFrameworkProperties().get(frameworkProperty), fpd, api.getMode());
                     result.getFrameworkPropertyResults().put(frameworkProperty, pvr);
-                } else if ( regionInfo.region != Region.INTERNAL && api.getInternalFrameworkProperties().contains(frameworkProperty) ) {
+                } else if (regionInfo.region != Region.INTERNAL
+                        && api.getInternalFrameworkProperties().contains(frameworkProperty)) {
                     final PropertyValidationResult pvr = new PropertyValidationResult();
                     PropertyValidator.setResult(pvr, null, api.getMode(), null, "Framework property is not allowed");
                     result.getFrameworkPropertyResults().put(frameworkProperty, pvr);
                 }
             }
             // make sure a result exists
-            result.getFrameworkPropertyResults().computeIfAbsent(frameworkProperty, id -> new PropertyValidationResult());
+            result.getFrameworkPropertyResults()
+                    .computeIfAbsent(frameworkProperty, id -> new PropertyValidationResult());
         }
 
         return result;
@@ -213,62 +235,68 @@ public class FeatureValidator {
      * @return {@code true} if a default value has been applied (the feature has been changed)
      * @since 1.2
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public boolean applyDefaultValues(final Feature feature, final FeatureValidationResult result) {
         boolean changed = false;
 
-        for(final Map.Entry<String, ConfigurationValidationResult> entry : result.getConfigurationResults().entrySet()) {
-            if ( entry.getValue().isUseDefaultValue() ) {
+        for (final Map.Entry<String, ConfigurationValidationResult> entry :
+                result.getConfigurationResults().entrySet()) {
+            if (entry.getValue().isUseDefaultValue()) {
                 final Configuration cfg = feature.getConfigurations().getConfiguration(entry.getKey());
-                if ( cfg != null ) {
+                if (cfg != null) {
                     boolean hasPrivateProperty = false;
-                    final List<String> keys = new ArrayList<>(Collections.list(cfg.getConfigurationProperties().keys()));
-                    for(final String k : keys ) {
-                        final PropertyValidationResult pvr = entry.getValue().getPropertyResults().get(k);
-                        if ( pvr != null && pvr.isUseDefaultValue() ) {
+                    final List<String> keys = new ArrayList<>(
+                            Collections.list(cfg.getConfigurationProperties().keys()));
+                    for (final String k : keys) {
+                        final PropertyValidationResult pvr =
+                                entry.getValue().getPropertyResults().get(k);
+                        if (pvr != null && pvr.isUseDefaultValue()) {
                             cfg.getProperties().remove(k);
                             changed = true;
                         } else {
                             hasPrivateProperty = true;
                         }
                     }
-                    if ( !hasPrivateProperty ) {
+                    if (!hasPrivateProperty) {
                         feature.getConfigurations().remove(cfg);
                         changed = true;
                     }
                 }
             }
-            for(final Map.Entry<String, PropertyValidationResult> propEntry : entry.getValue().getPropertyResults().entrySet()) {
-                if ( propEntry.getValue().isUseDefaultValue() ) {
+            for (final Map.Entry<String, PropertyValidationResult> propEntry :
+                    entry.getValue().getPropertyResults().entrySet()) {
+                if (propEntry.getValue().isUseDefaultValue()) {
                     final Configuration cfg = feature.getConfigurations().getConfiguration(entry.getKey());
-                    if ( cfg != null ) {
-                        if ( propEntry.getValue().getDefaultValue() == null ) {
-                            if ( propEntry.getValue().getUseExcludes() != null || propEntry.getValue().getUseIncludes() != null ) {
+                    if (cfg != null) {
+                        if (propEntry.getValue().getDefaultValue() == null) {
+                            if (propEntry.getValue().getUseExcludes() != null
+                                    || propEntry.getValue().getUseIncludes() != null) {
                                 final List<String> includes = new ArrayList<>();
                                 final Set<String> excludes = new LinkedHashSet<>();
-                                if ( propEntry.getValue().getUseIncludes() != null ) {
-                                    for(final String v : propEntry.getValue().getUseIncludes()) {
+                                if (propEntry.getValue().getUseIncludes() != null) {
+                                    for (final String v : propEntry.getValue().getUseIncludes()) {
                                         includes.add(0, v);
                                     }
                                 }
-                                if ( propEntry.getValue().getUseExcludes() != null ) {
-                                    for(final String v : propEntry.getValue().getUseExcludes()) {
+                                if (propEntry.getValue().getUseExcludes() != null) {
+                                    for (final String v : propEntry.getValue().getUseExcludes()) {
                                         excludes.add(v);
                                     }
                                 }
 
                                 Object value = cfg.getProperties().get(propEntry.getKey());
-                                if ( value.getClass().isArray() ) {
+                                if (value.getClass().isArray()) {
                                     // array
                                     int l = Array.getLength(value);
                                     int i = 0;
-                                    while ( i < l ) {
+                                    while (i < l) {
                                         final String val = Array.get(value, i).toString();
-                                        if ( excludes.contains(val) ) {
-                                            final Object newArray = Array.newInstance(value.getClass().getComponentType(), l - 1);
+                                        if (excludes.contains(val)) {
+                                            final Object newArray = Array.newInstance(
+                                                    value.getClass().getComponentType(), l - 1);
                                             int newIndex = 0;
-                                            for(int oldIndex = 0; oldIndex < l; oldIndex++) {
-                                                if ( oldIndex != i ) {
+                                            for (int oldIndex = 0; oldIndex < l; oldIndex++) {
+                                                if (oldIndex != i) {
                                                     Array.set(newArray, newIndex, Array.get(value, oldIndex));
                                                     newIndex++;
                                                 }
@@ -278,38 +306,47 @@ public class FeatureValidator {
                                             l--;
                                             changed = true;
                                             cfg.getProperties().put(propEntry.getKey(), value);
-                                        } else if ( includes.contains(val) ) {
+                                        } else if (includes.contains(val)) {
                                             includes.remove(val);
                                         }
                                         i++;
                                     }
-                                    for(final String val : includes) {
-                                        final Object newArray = Array.newInstance(value.getClass().getComponentType(), Array.getLength(value) + 1);
+                                    for (final String val : includes) {
+                                        final Object newArray = Array.newInstance(
+                                                value.getClass().getComponentType(), Array.getLength(value) + 1);
                                         System.arraycopy(value, 0, newArray, 1, Array.getLength(value));
-                                        Array.set(newArray, 0,
-                                            Converters.standardConverter().convert(val).to(value.getClass().getComponentType()));
+                                        Array.set(
+                                                newArray,
+                                                0,
+                                                Converters.standardConverter()
+                                                        .convert(val)
+                                                        .to(value.getClass().getComponentType()));
                                         value = newArray;
                                         cfg.getProperties().put(propEntry.getKey(), value);
                                         changed = true;
                                     }
-                                } else if ( value instanceof Collection ) {
+                                } else if (value instanceof Collection) {
                                     // collection
-                                    final Collection c = (Collection)value;
-                                    final Class collectionType = c.isEmpty() ? String.class : c.iterator().next().getClass();
+                                    final Collection c = (Collection) value;
+                                    final Class collectionType = c.isEmpty()
+                                            ? String.class
+                                            : c.iterator().next().getClass();
                                     final Iterator<?> i = c.iterator();
-                                    while ( i.hasNext() ) {
+                                    while (i.hasNext()) {
                                         final String val = i.next().toString();
-                                        if ( excludes.contains(val) ) {
+                                        if (excludes.contains(val)) {
                                             i.remove();
                                             changed = true;
-                                        } else if ( includes.contains(val) ) {
+                                        } else if (includes.contains(val)) {
                                             includes.remove(val);
                                         }
                                     }
-                                    for(final String val : includes) {
-                                        final Object newValue = Converters.standardConverter().convert(val).to(collectionType);
-                                        if ( c instanceof List ) {
-                                            ((List)c).add(0, newValue);
+                                    for (final String val : includes) {
+                                        final Object newValue = Converters.standardConverter()
+                                                .convert(val)
+                                                .to(collectionType);
+                                        if (c instanceof List) {
+                                            ((List) c).add(0, newValue);
                                         } else {
                                             c.add(newValue);
                                         }
@@ -320,7 +357,10 @@ public class FeatureValidator {
                                 cfg.getProperties().remove(propEntry.getKey());
                             }
                         } else {
-                            cfg.getProperties().put(propEntry.getKey(), propEntry.getValue().getDefaultValue());
+                            cfg.getProperties()
+                                    .put(
+                                            propEntry.getKey(),
+                                            propEntry.getValue().getDefaultValue());
                         }
                         changed = true;
                     }
@@ -328,12 +368,16 @@ public class FeatureValidator {
             }
         }
 
-        for(final Map.Entry<String, PropertyValidationResult> propEntry : result.getFrameworkPropertyResults().entrySet()) {
-            if ( propEntry.getValue().isUseDefaultValue() ) {
-                if ( propEntry.getValue().getDefaultValue() == null ) {
+        for (final Map.Entry<String, PropertyValidationResult> propEntry :
+                result.getFrameworkPropertyResults().entrySet()) {
+            if (propEntry.getValue().isUseDefaultValue()) {
+                if (propEntry.getValue().getDefaultValue() == null) {
                     feature.getFrameworkProperties().remove(propEntry.getKey());
                 } else {
-                    feature.getFrameworkProperties().put(propEntry.getKey(), propEntry.getValue().getDefaultValue().toString());
+                    feature.getFrameworkProperties()
+                            .put(
+                                    propEntry.getKey(),
+                                    propEntry.getValue().getDefaultValue().toString());
                 }
                 changed = true;
             }
@@ -344,7 +388,7 @@ public class FeatureValidator {
 
     static Region getConfigurationApiRegion(final ArtifactId id, final Map<ArtifactId, Region> cache) {
         Region result = cache.get(id);
-        if ( result == null ) {
+        if (result == null) {
             result = Region.GLOBAL;
             cache.put(id, result);
         }
@@ -362,14 +406,14 @@ public class FeatureValidator {
         final RegionInfo result = new RegionInfo();
 
         final List<ArtifactId> list = cfg.getFeatureOrigins();
-        if ( !list.isEmpty() ) {
+        if (!list.isEmpty()) {
             boolean global = false;
-            for(final ArtifactId id : list) {
+            for (final ArtifactId id : list) {
                 final Region region = getConfigurationApiRegion(id, cache);
-                if ( region == null ) {
+                if (region == null) {
                     return null;
                 }
-                if ( region == Region.GLOBAL ) {
+                if (region == Region.GLOBAL) {
                     global = true;
                     break;
                 }
@@ -384,16 +428,20 @@ public class FeatureValidator {
         return result;
     }
 
-    static Region getRegionInfo(final Region cfgRegion, final Configuration cfg, final String propertyName, final Map<ArtifactId, Region> cache) {
+    static Region getRegionInfo(
+            final Region cfgRegion,
+            final Configuration cfg,
+            final String propertyName,
+            final Map<ArtifactId, Region> cache) {
         final List<ArtifactId> list = cfg.getFeatureOrigins(propertyName);
-        if ( !list.isEmpty() ) {
+        if (!list.isEmpty()) {
             boolean global = false;
-            for(final ArtifactId id : list) {
+            for (final ArtifactId id : list) {
                 final Region region = getConfigurationApiRegion(id, cache);
-                if ( region == null ) {
+                if (region == null) {
                     return null;
                 }
-                if ( region == Region.GLOBAL ) {
+                if (region == Region.GLOBAL) {
                     global = true;
                     break;
                 }
@@ -403,15 +451,17 @@ public class FeatureValidator {
         return cfgRegion;
     }
 
-    RegionInfo getRegionInfo(final Feature feature, final String frameworkProperty, final Map<ArtifactId, Region> cache) {
-        final List<ArtifactId> list = feature.getFeatureOrigins(feature.getFrameworkPropertyMetadata(frameworkProperty));
+    RegionInfo getRegionInfo(
+            final Feature feature, final String frameworkProperty, final Map<ArtifactId, Region> cache) {
+        final List<ArtifactId> list =
+                feature.getFeatureOrigins(feature.getFrameworkPropertyMetadata(frameworkProperty));
         boolean global = false;
-        for(final ArtifactId id : list) {
+        for (final ArtifactId id : list) {
             final Region region = getConfigurationApiRegion(id, cache);
-            if ( region == null ) {
+            if (region == null) {
                 return null;
             }
-            if ( region == Region.GLOBAL ) {
+            if (region == Region.GLOBAL) {
                 global = true;
                 break;
             }

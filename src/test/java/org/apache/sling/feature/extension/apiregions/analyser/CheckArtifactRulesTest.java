@@ -1,22 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.feature.extension.apiregions.analyser;
-
-import static org.mockito.Mockito.when;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -39,6 +39,8 @@ import org.apache.sling.feature.scanner.impl.FeatureDescriptorImpl;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import static org.mockito.Mockito.when;
+
 public class CheckArtifactRulesTest {
 
     private CheckArtifactRules analyser = new CheckArtifactRules();
@@ -50,15 +52,15 @@ public class CheckArtifactRulesTest {
         final FeatureDescriptor fd = new FeatureDescriptorImpl(f);
         when(context.getFeatureDescriptor()).thenReturn(fd);
 
-        for(final Artifact b : f.getBundles()) {
+        for (final Artifact b : f.getBundles()) {
             final BundleDescriptor bd = Mockito.mock(BundleDescriptor.class);
             when(bd.getArtifact()).thenReturn(b);
             fd.getBundleDescriptors().add(bd);
         }
 
-        for(final Extension ext : f.getExtensions()) {
-            if ( ext.getType() == ExtensionType.ARTIFACTS ) {
-                for(final Artifact a : ext.getArtifacts()) {
+        for (final Extension ext : f.getExtensions()) {
+            if (ext.getType() == ExtensionType.ARTIFACTS) {
+                for (final Artifact a : ext.getArtifacts()) {
                     final ArtifactDescriptor bd = Mockito.mock(ArtifactDescriptor.class);
                     when(bd.getArtifact()).thenReturn(a);
                     fd.getArtifactDescriptors().add(bd);
@@ -69,17 +71,20 @@ public class CheckArtifactRulesTest {
         return context;
     }
 
-    @Test public void testValidateFeatureNoRules() throws Exception {
+    @Test
+    public void testValidateFeatureNoRules() throws Exception {
         final Feature f = new Feature(ArtifactId.parse("g:a:1"));
 
         final AnalyserTaskContext context = newContext(f);
         analyser.execute(context);
 
         Mockito.verify(context, Mockito.never()).reportError(Mockito.anyString());
-        Mockito.verify(context, Mockito.atLeastOnce()).reportExtensionWarning(Mockito.eq(ArtifactRules.EXTENSION_NAME), Mockito.anyString());
+        Mockito.verify(context, Mockito.atLeastOnce())
+                .reportExtensionWarning(Mockito.eq(ArtifactRules.EXTENSION_NAME), Mockito.anyString());
     }
 
-    @Test public void testValidateFeature() throws Exception {
+    @Test
+    public void testValidateFeature() throws Exception {
         final Feature f = new Feature(ArtifactId.parse("g:a:1"));
         final Artifact bundle = new Artifact(ArtifactId.parse("g:b:1.1"));
         f.getBundles().add(bundle);
@@ -107,11 +112,14 @@ public class CheckArtifactRulesTest {
         final AnalyserTaskContext context = newContext(f);
         analyser.execute(context);
 
-        Mockito.verify(context, Mockito.atLeastOnce()).reportArtifactError(Mockito.eq(bundle.getId()), Mockito.eq(r.getMessage()));
-        Mockito.verify(context, Mockito.atLeastOnce()).reportArtifactError(Mockito.eq(artifact.getId()), Mockito.eq(r2.getMessage()));
+        Mockito.verify(context, Mockito.atLeastOnce())
+                .reportArtifactError(Mockito.eq(bundle.getId()), Mockito.eq(r.getMessage()));
+        Mockito.verify(context, Mockito.atLeastOnce())
+                .reportArtifactError(Mockito.eq(artifact.getId()), Mockito.eq(r2.getMessage()));
     }
 
-    @Test public void testValidateFeatureEnforceOnNotReached() throws Exception {
+    @Test
+    public void testValidateFeatureEnforceOnNotReached() throws Exception {
         final Feature f = new Feature(ArtifactId.parse("g:a:1"));
         final Artifact bundle = new Artifact(ArtifactId.parse("g:b:1.1"));
         f.getBundles().add(bundle);
@@ -133,10 +141,12 @@ public class CheckArtifactRulesTest {
         analyser.execute(context);
 
         final String reportMsg = r.getMessage().concat(" Enforce on: ").concat(r.getEnforceOn());
-        Mockito.verify(context, Mockito.atLeastOnce()).reportArtifactWarning(Mockito.eq(bundle.getId()), Mockito.eq(reportMsg));
+        Mockito.verify(context, Mockito.atLeastOnce())
+                .reportArtifactWarning(Mockito.eq(bundle.getId()), Mockito.eq(reportMsg));
     }
 
-    @Test public void testValidateFeatureEnforceOnReached() throws Exception {
+    @Test
+    public void testValidateFeatureEnforceOnReached() throws Exception {
         final Feature f = new Feature(ArtifactId.parse("g:a:1"));
         final Artifact bundle = new Artifact(ArtifactId.parse("g:b:1.1"));
         f.getBundles().add(bundle);
@@ -158,7 +168,8 @@ public class CheckArtifactRulesTest {
         analyser.execute(context);
 
         final String reportMsg = r.getMessage().concat(" Enforce on: ").concat(r.getEnforceOn());
-        Mockito.verify(context, Mockito.atLeastOnce()).reportArtifactError(Mockito.eq(bundle.getId()), Mockito.eq(reportMsg));
+        Mockito.verify(context, Mockito.atLeastOnce())
+                .reportArtifactError(Mockito.eq(bundle.getId()), Mockito.eq(reportMsg));
 
         // test again with date of today
         r.setEnforceOn(df.format(Calendar.getInstance().getTime()));
@@ -167,6 +178,7 @@ public class CheckArtifactRulesTest {
         analyser.execute(context2);
 
         final String reportMsg2 = r.getMessage().concat(" Enforce on: ").concat(r.getEnforceOn());
-        Mockito.verify(context2, Mockito.atLeastOnce()).reportArtifactError(Mockito.eq(bundle.getId()), Mockito.eq(reportMsg2));
+        Mockito.verify(context2, Mockito.atLeastOnce())
+                .reportArtifactError(Mockito.eq(bundle.getId()), Mockito.eq(reportMsg2));
     }
 }

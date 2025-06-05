@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.feature.extension.apiregions.analyser;
 
@@ -23,11 +25,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.jar.Manifest;
+
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonReader;
 import jakarta.json.stream.JsonParsingException;
-
 import org.apache.johnzon.core.JsonReaderImpl.NothingToRead;
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
@@ -114,17 +116,15 @@ public abstract class AbstractApiRegionsAnalyserTaskTest<T extends AbstractApiRe
         when(extensions.getByName("api-regions")).thenReturn(extension);
 
         Feature feature = mock(Feature.class);
-        when(feature.getId()).thenReturn(new ArtifactId("org.apache.sling.testing",
-                                                        "org.apache.sling.testing.apiregions",
-                                                        "1.0.0",
-                                                        null,
-                                                        null));
+        when(feature.getId())
+                .thenReturn(new ArtifactId(
+                        "org.apache.sling.testing", "org.apache.sling.testing.apiregions", "1.0.0", null, null));
         when(feature.getExtensions()).thenReturn(extensions);
 
         AnalyserTaskContext ctx = mock(AnalyserTaskContext.class);
         when(ctx.getFeature()).thenReturn(feature);
         @SuppressWarnings("unchecked")
-        Map<String,String> cfg = Mockito.mock(Map.class);
+        Map<String, String> cfg = Mockito.mock(Map.class);
         when(ctx.getConfiguration()).thenReturn(cfg);
         when(cfg.getOrDefault(anyString(), anyString())).thenAnswer(new Answer<String>() {
 
@@ -133,10 +133,10 @@ public abstract class AbstractApiRegionsAnalyserTaskTest<T extends AbstractApiRe
                 Object[] args = invocation.getArguments();
                 return (String) args[1];
             }
-
         });
 
-        PackageInfo packageInfo = new PackageInfo("org.osgi.util.function", "1.0", false, Collections.singleton("org.objectweb.asm"));
+        PackageInfo packageInfo =
+                new PackageInfo("org.osgi.util.function", "1.0", false, Collections.singleton("org.objectweb.asm"));
 
         BundleDescriptor bundleDescriptor = new TestBundleDescriptor();
         bundleDescriptor.getExportedPackages().add(packageInfo);
@@ -148,15 +148,19 @@ public abstract class AbstractApiRegionsAnalyserTaskTest<T extends AbstractApiRe
 
         List<String> errors = new LinkedList<>();
         doAnswer(invocation -> {
-            String error = invocation.getArgument(0);
-            errors.add(error);
-            return null;
-        }).when(ctx).reportError(anyString());
+                    String error = invocation.getArgument(0);
+                    errors.add(error);
+                    return null;
+                })
+                .when(ctx)
+                .reportError(anyString());
         doAnswer(invocation -> {
-            String error = invocation.getArgument(1);
-            errors.add(error);
-            return null;
-        }).when(ctx).reportArtifactError(any(), anyString());
+                    String error = invocation.getArgument(1);
+                    errors.add(error);
+                    return null;
+                })
+                .when(ctx)
+                .reportArtifactError(any(), anyString());
 
         analyserTask.execute(ctx);
 
@@ -197,5 +201,4 @@ public abstract class AbstractApiRegionsAnalyserTaskTest<T extends AbstractApiRe
             return null;
         }
     }
-
 }

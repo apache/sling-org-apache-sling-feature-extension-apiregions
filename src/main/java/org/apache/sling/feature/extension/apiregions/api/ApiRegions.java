@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.feature.extension.apiregions.api;
 
@@ -40,7 +42,6 @@ import jakarta.json.JsonString;
 import jakarta.json.JsonValue;
 import jakarta.json.JsonValue.ValueType;
 import jakarta.json.JsonWriter;
-
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Extension;
@@ -49,7 +50,7 @@ import org.apache.sling.feature.Feature;
 
 /**
  * Configuration of API regions for Java API.
- * 
+ *
  * This class is not thread safe.
  */
 public class ApiRegions {
@@ -121,19 +122,17 @@ public class ApiRegions {
         Set<ArtifactId> origins = new LinkedHashSet<>(Arrays.asList(region.getFeatureOrigins()));
 
         this.regions.stream()
-            .filter(
-                existingRegion ->
-                {
+                .filter(existingRegion -> {
                     ArtifactId[] targetOrigins = existingRegion.getFeatureOrigins();
                     return (targetOrigins.length == 0 && origins.isEmpty())
-                        || Stream.of(targetOrigins).anyMatch(origins::contains);
-                }
-            ).reduce((a,b) -> b).ifPresent(region::setParent);
+                            || Stream.of(targetOrigins).anyMatch(origins::contains);
+                })
+                .reduce((a, b) -> b)
+                .ifPresent(region::setParent);
 
         this.regions.add(idx, region);
         return true;
     }
-
 
     /**
      * Get a named region
@@ -155,9 +154,9 @@ public class ApiRegions {
     }
 
     public ApiRegion[] getRegionsByFeature(final ArtifactId featureId) {
-        return this.regions.stream().filter(
-            region -> Stream.of(region.getFeatureOrigins()).anyMatch(featureId::equals)
-        ).toArray(ApiRegion[]::new);
+        return this.regions.stream()
+                .filter(region -> Stream.of(region.getFeatureOrigins()).anyMatch(featureId::equals))
+                .toArray(ApiRegion[]::new);
     }
 
     /**
@@ -308,18 +307,18 @@ public class ApiRegions {
      * @since 1.1
      */
     public static ApiRegions getApiRegions(final Extension ext) {
-        if ( ext == null ) {
+        if (ext == null) {
             return null;
         }
-        if ( ext.getType() != ExtensionType.JSON ) {
+        if (ext.getType() != ExtensionType.JSON) {
             throw new IllegalArgumentException("Extension " + ext.getName() + " must have JSON type");
         }
-        if ( ext.getJSONStructure() == null ) {
+        if (ext.getJSONStructure() == null) {
             return new ApiRegions();
         }
         try {
             return parse(ext.getJSONStructure().asJsonArray());
-        } catch ( final IOException ioe) {
+        } catch (final IOException ioe) {
             throw new IllegalArgumentException(ioe.getMessage(), ioe);
         }
     }

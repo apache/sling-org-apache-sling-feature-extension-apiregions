@@ -1,20 +1,32 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.feature.extension.apiregions.analyser;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Extension;
@@ -31,16 +43,6 @@ import org.apache.sling.feature.scanner.Scanner;
 import org.apache.sling.feature.scanner.spi.ExtensionScanner;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.StringReader;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -54,9 +56,8 @@ public class CheckApiRegionsCrossFeatureDupsTest {
 
         Scanner scanner = getScanner();
         AnalyserTask at = new CheckApiRegionsCrossFeatureDups();
-        Map<String, Map<String,String>> configs =
-                Collections.singletonMap("api-regions-crossfeature-dups",
-                Collections.singletonMap("warningPackages", "x.y.z"));
+        Map<String, Map<String, String>> configs = Collections.singletonMap(
+                "api-regions-crossfeature-dups", Collections.singletonMap("warningPackages", "x.y.z"));
         Analyser a = new Analyser(scanner, configs, at);
         AnalyserResult res = a.analyse(f);
         assertEquals(1, res.getArtifactErrors().size());
@@ -83,8 +84,7 @@ public class CheckApiRegionsCrossFeatureDupsTest {
         Map<String, String> cfg = new HashMap<>();
         cfg.put("warningPackages", "a.b.c");
         cfg.put("ignoredPackages", "x.y.z");
-        Map<String, Map<String,String>> configs =
-            Collections.singletonMap("api-regions-crossfeature-dups", cfg);
+        Map<String, Map<String, String>> configs = Collections.singletonMap("api-regions-crossfeature-dups", cfg);
         Analyser a = new Analyser(scanner, configs, at);
         AnalyserResult res = a.analyse(f);
         assertEquals(0, res.getArtifactErrors().size());
@@ -110,8 +110,7 @@ public class CheckApiRegionsCrossFeatureDupsTest {
         CheckApiRegionsCrossFeatureDups at = new CheckApiRegionsCrossFeatureDups();
         Map<String, String> cfg = new HashMap<>();
         cfg.put("warningPackages", "x.*, a.*");
-        Map<String, Map<String,String>> configs =
-            Collections.singletonMap("api-regions-crossfeature-dups", cfg);
+        Map<String, Map<String, String>> configs = Collections.singletonMap("api-regions-crossfeature-dups", cfg);
         Analyser a = new Analyser(scanner, configs, at);
         AnalyserResult res = a.analyse(f);
         assertEquals(0, res.getArtifactErrors().size());
@@ -137,8 +136,7 @@ public class CheckApiRegionsCrossFeatureDupsTest {
         CheckApiRegionsCrossFeatureDups at = new CheckApiRegionsCrossFeatureDups();
         Map<String, String> cfg = new HashMap<>();
         cfg.put("ignoredPackages", "a.b.c");
-        Map<String, Map<String,String>> configs =
-            Collections.singletonMap("api-regions-crossfeature-dups", cfg);
+        Map<String, Map<String, String>> configs = Collections.singletonMap("api-regions-crossfeature-dups", cfg);
         Analyser a = new Analyser(scanner, configs, at);
         AnalyserResult res = a.analyse(f);
         assertEquals(0, res.getArtifactErrors().size());
@@ -181,9 +179,8 @@ public class CheckApiRegionsCrossFeatureDupsTest {
 
         Scanner scanner = getScanner2();
         AnalyserTask at = new CheckApiRegionsCrossFeatureDups();
-        Map<String, Map<String,String>> configs =
-                Collections.singletonMap("api-regions-crossfeature-dups",
-                Collections.singletonMap("regions", "something,global"));
+        Map<String, Map<String, String>> configs = Collections.singletonMap(
+                "api-regions-crossfeature-dups", Collections.singletonMap("regions", "something,global"));
         Analyser a = new Analyser(scanner, configs, at);
         AnalyserResult res = a.analyse(f);
         assertEquals(1, res.getArtifactErrors().size());
@@ -205,9 +202,8 @@ public class CheckApiRegionsCrossFeatureDupsTest {
 
         Scanner scanner = getScanner3();
         AnalyserTask at = new CheckApiRegionsCrossFeatureDups();
-        Map<String, Map<String,String>> configs =
-                Collections.singletonMap("api-regions-crossfeature-dups",
-                Collections.singletonMap("definingFeatures", "g:f1:1"));
+        Map<String, Map<String, String>> configs = Collections.singletonMap(
+                "api-regions-crossfeature-dups", Collections.singletonMap("definingFeatures", "g:f1:1"));
         Analyser a = new Analyser(scanner, configs, at);
         AnalyserResult res = a.analyse(f);
 
@@ -229,9 +225,8 @@ public class CheckApiRegionsCrossFeatureDupsTest {
 
         Scanner scanner = getScanner3();
         AnalyserTask at = new CheckApiRegionsCrossFeatureDups();
-        Map<String, Map<String,String>> configs =
-                Collections.singletonMap("api-regions-crossfeature-dups",
-                Collections.singletonMap("definingFeatures", "g:f1:*"));
+        Map<String, Map<String, String>> configs = Collections.singletonMap(
+                "api-regions-crossfeature-dups", Collections.singletonMap("definingFeatures", "g:f1:*"));
         Analyser a = new Analyser(scanner, configs, at);
         AnalyserResult res = a.analyse(f);
 
@@ -253,9 +248,8 @@ public class CheckApiRegionsCrossFeatureDupsTest {
 
         Scanner scanner = getScanner3();
         AnalyserTask at = new CheckApiRegionsCrossFeatureDups();
-        Map<String, Map<String,String>> configs =
-                Collections.singletonMap("api-regions-crossfeature-dups",
-                Collections.singletonMap("definingFeatures", "g:f2:*"));
+        Map<String, Map<String, String>> configs = Collections.singletonMap(
+                "api-regions-crossfeature-dups", Collections.singletonMap("definingFeatures", "g:f2:*"));
         Analyser a = new Analyser(scanner, configs, at);
         AnalyserResult res = a.analyse(f);
 
@@ -268,16 +262,16 @@ public class CheckApiRegionsCrossFeatureDupsTest {
             @Override
             public URL provide(ArtifactId id) {
                 switch (id.toMvnId()) {
-                case "g:exp1:1":
-                    return getClass().getResource("/crossfeatdups/test-bundles/feature-export.jar");
-                case "g:exp2:1":
-                    return getClass().getResource("/crossfeatdups/test-bundles/feature-export2.jar");
-                case "g:noexp:1":
-                    return getClass().getResource("/crossfeatdups/test-bundles/no-exports.jar");
-                case "g:extra:1":
-                    return getClass().getResource("/crossfeatdups/test-bundles/no-exports.jar");
-                case "g:extra:2":
-                    return getClass().getResource("/crossfeatdups/test-bundles/feature-export4.jar");
+                    case "g:exp1:1":
+                        return getClass().getResource("/crossfeatdups/test-bundles/feature-export.jar");
+                    case "g:exp2:1":
+                        return getClass().getResource("/crossfeatdups/test-bundles/feature-export2.jar");
+                    case "g:noexp:1":
+                        return getClass().getResource("/crossfeatdups/test-bundles/no-exports.jar");
+                    case "g:extra:1":
+                        return getClass().getResource("/crossfeatdups/test-bundles/no-exports.jar");
+                    case "g:extra:2":
+                        return getClass().getResource("/crossfeatdups/test-bundles/feature-export4.jar");
                 }
                 return null;
             }
@@ -291,16 +285,16 @@ public class CheckApiRegionsCrossFeatureDupsTest {
             @Override
             public URL provide(ArtifactId id) {
                 switch (id.toMvnId()) {
-                case "g:exp1:1":
-                    return getClass().getResource("/crossfeatdups/test-bundles/feature-export.jar");
-                case "g:exp2:1":
-                    return getClass().getResource("/crossfeatdups/test-bundles/feature-export2.jar");
-                case "g:noexp:1":
-                    return getClass().getResource("/crossfeatdups/test-bundles/no-exports.jar");
-                case "g:extra:1":
-                    return getClass().getResource("/crossfeatdups/test-bundles/feature-export3.jar");
-                case "g:extra:2":
-                    return getClass().getResource("/crossfeatdups/test-bundles/feature-export4.jar");
+                    case "g:exp1:1":
+                        return getClass().getResource("/crossfeatdups/test-bundles/feature-export.jar");
+                    case "g:exp2:1":
+                        return getClass().getResource("/crossfeatdups/test-bundles/feature-export2.jar");
+                    case "g:noexp:1":
+                        return getClass().getResource("/crossfeatdups/test-bundles/no-exports.jar");
+                    case "g:extra:1":
+                        return getClass().getResource("/crossfeatdups/test-bundles/feature-export3.jar");
+                    case "g:extra:2":
+                        return getClass().getResource("/crossfeatdups/test-bundles/feature-export4.jar");
                 }
                 return null;
             }
@@ -314,10 +308,10 @@ public class CheckApiRegionsCrossFeatureDupsTest {
             @Override
             public URL provide(ArtifactId id) {
                 switch (id.toMvnId()) {
-                case "g:exp0:1":
-                    return getClass().getResource("/crossfeatdups/test-bundles/feature-export.jar");
-                case "g:exp1:1":
-                    return getClass().getResource("/crossfeatdups/test-bundles/feature-export1.jar");
+                    case "g:exp0:1":
+                        return getClass().getResource("/crossfeatdups/test-bundles/feature-export.jar");
+                    case "g:exp1:1":
+                        return getClass().getResource("/crossfeatdups/test-bundles/feature-export1.jar");
                 }
                 return null;
             }
@@ -340,15 +334,13 @@ public class CheckApiRegionsCrossFeatureDupsTest {
 
         @Override
         public ContainerDescriptor scan(Feature arg0, Extension arg1, ArtifactProvider arg2) throws IOException {
-            if ( arg1.getName().equals(ApiRegions.EXTENSION_NAME) ) {
-                final ContainerDescriptor desc = new ContainerDescriptor(arg1.getName()) {
+            if (arg1.getName().equals(ApiRegions.EXTENSION_NAME)) {
+                final ContainerDescriptor desc = new ContainerDescriptor(arg1.getName()) {};
 
-                };
                 desc.lock();
                 return desc;
             }
             return null;
         }
-
     }
 }

@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.feature.extension.apiregions.api.artifacts;
 
@@ -26,7 +28,6 @@ import jakarta.json.JsonException;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonValue;
-
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionState;
 import org.apache.sling.feature.ExtensionType;
@@ -67,17 +68,17 @@ public class ArtifactRules extends AttributeableEntity {
      * @throws IllegalArgumentException If the extension is wrongly formatted
      */
     public static ArtifactRules getArtifactRules(final Extension ext) {
-        if ( ext == null ) {
+        if (ext == null) {
             return null;
         }
-        if ( ext.getType() != ExtensionType.JSON ) {
+        if (ext.getType() != ExtensionType.JSON) {
             throw new IllegalArgumentException("Extension " + ext.getName() + " must have JSON type");
         }
         try {
             final ArtifactRules result = new ArtifactRules();
             result.fromJSONObject(ext.getJSONStructure().asJsonObject());
             return result;
-        } catch ( final IOException ioe) {
+        } catch (final IOException ioe) {
             throw new IllegalArgumentException(ioe.getMessage(), ioe);
         }
     }
@@ -91,18 +92,18 @@ public class ArtifactRules extends AttributeableEntity {
      */
     public static void setArtifactRules(final Feature feature, final ArtifactRules rules) {
         Extension ext = feature.getExtensions().getByName(EXTENSION_NAME);
-        if ( rules == null ) {
-            if ( ext != null ) {
+        if (rules == null) {
+            if (ext != null) {
                 feature.getExtensions().remove(ext);
             }
         } else {
-            if ( ext == null ) {
+            if (ext == null) {
                 ext = new Extension(ExtensionType.JSON, EXTENSION_NAME, ExtensionState.OPTIONAL);
                 feature.getExtensions().add(ext);
             }
             try {
                 ext.setJSONStructure(rules.toJSONObject());
-            } catch ( final IOException ioe) {
+            } catch (final IOException ioe) {
                 throw new IllegalArgumentException(ioe);
             }
         }
@@ -149,21 +150,21 @@ public class ArtifactRules extends AttributeableEntity {
     @Override
     public JsonObjectBuilder createJson() throws IOException {
         final JsonObjectBuilder objBuilder = super.createJson();
-        if ( this.getMode() != Mode.STRICT ) {
+        if (this.getMode() != Mode.STRICT) {
             objBuilder.add(InternalConstants.KEY_MODE, this.getMode().name());
         }
 
-        if ( !this.getBundleVersionRules().isEmpty() ) {
+        if (!this.getBundleVersionRules().isEmpty()) {
             final JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
-            for(final VersionRule rule : this.getBundleVersionRules()) {
+            for (final VersionRule rule : this.getBundleVersionRules()) {
                 arrayBuilder.add(rule.createJson());
             }
             objBuilder.add(InternalConstants.KEY_BUNDLE_VERSION_RULES, arrayBuilder);
         }
 
-        if ( !this.getArtifactVersionRules().isEmpty() ) {
+        if (!this.getArtifactVersionRules().isEmpty()) {
             final JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
-            for(final VersionRule rule : this.getArtifactVersionRules()) {
+            for (final VersionRule rule : this.getArtifactVersionRules()) {
                 arrayBuilder.add(rule.createJson());
             }
             objBuilder.add(InternalConstants.KEY_ARTIFACT_VERSION_RULES, arrayBuilder);
@@ -173,24 +174,24 @@ public class ArtifactRules extends AttributeableEntity {
     }
 
     /**
-	 * Extract the metadata from the JSON object.
-	 * This method first calls {@link #clear()}.
+     * Extract the metadata from the JSON object.
+     * This method first calls {@link #clear()}.
      *
-	 * @param jsonObj The JSON Object
-	 * @throws IOException If JSON parsing fails
-	 */
+     * @param jsonObj The JSON Object
+     * @throws IOException If JSON parsing fails
+     */
     @Override
     public void fromJSONObject(final JsonObject jsonObj) throws IOException {
         super.fromJSONObject(jsonObj);
         try {
-			final String modeVal = this.getString(InternalConstants.KEY_MODE);
-			if ( modeVal != null ) {
+            final String modeVal = this.getString(InternalConstants.KEY_MODE);
+            if (modeVal != null) {
                 this.setMode(Mode.valueOf(modeVal.toUpperCase()));
-			}
+            }
 
             JsonValue val = this.getAttributes().remove(InternalConstants.KEY_BUNDLE_VERSION_RULES);
-            if ( val != null ) {
-                for(final JsonValue innerVal : val.asJsonArray()) {
+            if (val != null) {
+                for (final JsonValue innerVal : val.asJsonArray()) {
                     final VersionRule rule = new VersionRule();
                     rule.fromJSONObject(innerVal.asJsonObject());
                     this.getBundleVersionRules().add(rule);
@@ -198,8 +199,8 @@ public class ArtifactRules extends AttributeableEntity {
             }
 
             val = this.getAttributes().remove(InternalConstants.KEY_ARTIFACT_VERSION_RULES);
-            if ( val != null ) {
-                for(final JsonValue innerVal : val.asJsonArray()) {
+            if (val != null) {
+                for (final JsonValue innerVal : val.asJsonArray()) {
                     final VersionRule rule = new VersionRule();
                     rule.fromJSONObject(innerVal.asJsonObject());
                     this.getArtifactVersionRules().add(rule);

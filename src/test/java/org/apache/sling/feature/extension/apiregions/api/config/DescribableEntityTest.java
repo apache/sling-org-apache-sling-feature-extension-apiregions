@@ -1,33 +1,34 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.feature.extension.apiregions.api.config;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
 import jakarta.json.Json;
-
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionState;
 import org.apache.sling.feature.ExtensionType;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class DescribableEntityTest {
 
@@ -35,7 +36,8 @@ public class DescribableEntityTest {
         // DescribableEntity is abstract, therefore subclassing for testing
     }
 
-    @Test public void testClear() {
+    @Test
+    public void testClear() {
         final DE entity = new DE();
         entity.getAttributes().put("a", Json.createValue(5));
         entity.setDeprecated("d");
@@ -52,10 +54,11 @@ public class DescribableEntityTest {
         assertNull(entity.getSince());
     }
 
-    @Test public void testFromJSONObject() throws IOException {
+    @Test
+    public void testFromJSONObject() throws IOException {
         final Extension ext = new Extension(ExtensionType.JSON, "a", ExtensionState.OPTIONAL);
-        ext.setJSON("{ \"a\" : 1, \"b\" : \"2\", \"title\" : \"t\", \"description\" : \"desc\", \"deprecated\" : " +
-                "\"depr\", \"enforce-on\" : \"1970-04-01\", \"since\" : \"1970-01-01\"}");
+        ext.setJSON("{ \"a\" : 1, \"b\" : \"2\", \"title\" : \"t\", \"description\" : \"desc\", \"deprecated\" : "
+                + "\"depr\", \"enforce-on\" : \"1970-04-01\", \"since\" : \"1970-01-01\"}");
 
         final DE entity = new DE();
         entity.fromJSONObject(ext.getJSONStructure().asJsonObject());
@@ -68,7 +71,8 @@ public class DescribableEntityTest {
         assertEquals("1970-01-01", entity.getSince());
     }
 
-    @Test public void testToJSONObject() throws IOException {
+    @Test
+    public void testToJSONObject() throws IOException {
         final DE entity = new DE();
         entity.getAttributes().put("a", Json.createValue(1));
         entity.getAttributes().put("b", Json.createValue("2"));
@@ -79,8 +83,8 @@ public class DescribableEntityTest {
         entity.setSince("1970-01-01");
 
         final Extension ext = new Extension(ExtensionType.JSON, "a", ExtensionState.OPTIONAL);
-        ext.setJSON("{ \"a\" : 1, \"b\" : \"2\", \"title\" : \"t\", \"description\" : \"desc\", \"deprecated\" : " +
-                "\"depr\", \"enforce-on\" : \"1970-04-01\", \"since\" : \"1970-01-01\"}");
+        ext.setJSON("{ \"a\" : 1, \"b\" : \"2\", \"title\" : \"t\", \"description\" : \"desc\", \"deprecated\" : "
+                + "\"depr\", \"enforce-on\" : \"1970-04-01\", \"since\" : \"1970-01-01\"}");
 
         assertEquals(ext.getJSONStructure().asJsonObject(), entity.toJSONObject());
     }

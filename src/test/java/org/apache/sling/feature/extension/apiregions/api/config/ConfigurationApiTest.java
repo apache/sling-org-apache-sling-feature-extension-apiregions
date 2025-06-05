@@ -1,31 +1,26 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.feature.extension.apiregions.api.config;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
 import jakarta.json.Json;
-
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionState;
@@ -33,14 +28,22 @@ import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.Feature;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 public class ConfigurationApiTest {
 
-    @Test public void testNullFeature() {
-        assertNull(ConfigurationApi.getConfigurationApi((Feature)null));
+    @Test
+    public void testNullFeature() {
+        assertNull(ConfigurationApi.getConfigurationApi((Feature) null));
     }
 
-    @Test public void testNullExtension() {
-        assertNull(ConfigurationApi.getConfigurationApi((Extension)null));
+    @Test
+    public void testNullExtension() {
+        assertNull(ConfigurationApi.getConfigurationApi((Extension) null));
         final Feature f = new Feature(ArtifactId.parse("g:a:1.0"));
         assertNull(ConfigurationApi.getConfigurationApi(f));
     }
@@ -53,7 +56,8 @@ public class ConfigurationApiTest {
         ConfigurationApi.getConfigurationApi(f);
     }
 
-    @Test public void testSetConfigurationApi() {
+    @Test
+    public void testSetConfigurationApi() {
         final ConfigurationApi api = new ConfigurationApi();
         final Feature f = new Feature(ArtifactId.parse("g:a:1"));
 
@@ -67,7 +71,8 @@ public class ConfigurationApiTest {
         assertNull(f.getExtensions().getByName(ConfigurationApi.EXTENSION_NAME));
     }
 
-    @Test public void testClear() {
+    @Test
+    public void testClear() {
         final ConfigurationApi entity = new ConfigurationApi();
         entity.getAttributes().put("a", Json.createValue(5));
         entity.getConfigurationDescriptions().put("pid", new ConfigurationDescription());
@@ -78,7 +83,8 @@ public class ConfigurationApiTest {
         entity.getFeatureToRegionCache().put(ArtifactId.parse("g:a:1"), Region.GLOBAL);
         entity.setMode(Mode.SILENT);
         entity.getConfigurationDescriptionAdditions().put("pid", new ConfigurationDescriptionAddition());
-        entity.getFactoryConfigurationDescriptionAdditions().put("factory", new FactoryConfigurationDescriptionAddition());
+        entity.getFactoryConfigurationDescriptionAdditions()
+                .put("factory", new FactoryConfigurationDescriptionAddition());
         entity.clear();
         assertTrue(entity.getAttributes().isEmpty());
         assertTrue(entity.getConfigurationDescriptions().isEmpty());
@@ -92,17 +98,18 @@ public class ConfigurationApiTest {
         assertEquals(Mode.STRICT, entity.getMode());
     }
 
-    @Test public void testFromJSONObject() throws IOException {
+    @Test
+    public void testFromJSONObject() throws IOException {
         final Extension ext = new Extension(ExtensionType.JSON, "a", ExtensionState.OPTIONAL);
-        ext.setJSON("{ \"a\" : 5, \"configurations\" : { \"pid\": {}}, " +
-            "\"factory-configurations\" : { \"factory\" : {}}," +
-            "\"framework-properties\" : { \"prop\" : { \"type\" : \"STRING\"}}," +
-            "\"internal-framework-properties\" : [\"iprop\"],"+
-            "\"region\" : \"INTERNAL\","+
-            "\"region-cache\" : {\"g:a1:feature:1.0.0\" : \"INTERNAL\", \"g:a2:feature:1.7.3\" : \"GLOBAL\"},"+
-            "\"configuration-additions\" : { \"pida\": {}},"+
-            "\"factory-configuration-additions\" : { \"factorya\": {}}"+
-            "}");
+        ext.setJSON("{ \"a\" : 5, \"configurations\" : { \"pid\": {}}, "
+                + "\"factory-configurations\" : { \"factory\" : {}},"
+                + "\"framework-properties\" : { \"prop\" : { \"type\" : \"STRING\"}},"
+                + "\"internal-framework-properties\" : [\"iprop\"],"
+                + "\"region\" : \"INTERNAL\","
+                + "\"region-cache\" : {\"g:a1:feature:1.0.0\" : \"INTERNAL\", \"g:a2:feature:1.7.3\" : \"GLOBAL\"},"
+                + "\"configuration-additions\" : { \"pida\": {}},"
+                + "\"factory-configuration-additions\" : { \"factorya\": {}}"
+                + "}");
 
         final ConfigurationApi entity = new ConfigurationApi();
         entity.fromJSONObject(ext.getJSONStructure().asJsonObject());
@@ -125,34 +132,37 @@ public class ConfigurationApiTest {
         assertEquals(Mode.STRICT, entity.getMode());
     }
 
-    @Test public void testToJSONObject() throws IOException {
+    @Test
+    public void testToJSONObject() throws IOException {
         final ConfigurationApi entity = new ConfigurationApi();
         entity.getAttributes().put("a", Json.createValue(5));
         entity.getConfigurationDescriptions().put("pid", new ConfigurationDescription());
         entity.getFactoryConfigurationDescriptions().put("factory", new FactoryConfigurationDescription());
         entity.getFrameworkPropertyDescriptions().put("prop", new FrameworkPropertyDescription());
         entity.getConfigurationDescriptionAdditions().put("pida", new ConfigurationDescriptionAddition());
-        entity.getFactoryConfigurationDescriptionAdditions().put("factorya", new FactoryConfigurationDescriptionAddition());
+        entity.getFactoryConfigurationDescriptionAdditions()
+                .put("factorya", new FactoryConfigurationDescriptionAddition());
         entity.getInternalFrameworkProperties().add("iprop");
         entity.setRegion(Region.INTERNAL);
         entity.getFeatureToRegionCache().put(ArtifactId.parse("g:a1:feature:1.0.0"), Region.INTERNAL);
         entity.getFeatureToRegionCache().put(ArtifactId.parse("g:a2:feature:1.7.3"), Region.GLOBAL);
         entity.setMode(Mode.SILENT);
         final Extension ext = new Extension(ExtensionType.JSON, "a", ExtensionState.OPTIONAL);
-        ext.setJSON("{ \"a\" : 5, \"configurations\" : { \"pid\": {}}, " +
-            "\"factory-configurations\" : { \"factory\" : {}}," +
-            "\"framework-properties\" : { \"prop\" : {}}," +
-            "\"internal-framework-properties\" : [\"iprop\"],"+
-            "\"region\" : \"INTERNAL\","+
-            "\"region-cache\" : {\"g:a1:feature:1.0.0\" : \"INTERNAL\", \"g:a2:feature:1.7.3\" : \"GLOBAL\"}," +
-            "\"configuration-additions\" : { \"pida\": {}},"+
-            "\"factory-configuration-additions\" : { \"factorya\": {}},"+
-            "\"mode\" : \"SILENT\"}");
+        ext.setJSON("{ \"a\" : 5, \"configurations\" : { \"pid\": {}}, "
+                + "\"factory-configurations\" : { \"factory\" : {}},"
+                + "\"framework-properties\" : { \"prop\" : {}},"
+                + "\"internal-framework-properties\" : [\"iprop\"],"
+                + "\"region\" : \"INTERNAL\","
+                + "\"region-cache\" : {\"g:a1:feature:1.0.0\" : \"INTERNAL\", \"g:a2:feature:1.7.3\" : \"GLOBAL\"},"
+                + "\"configuration-additions\" : { \"pida\": {}},"
+                + "\"factory-configuration-additions\" : { \"factorya\": {}},"
+                + "\"mode\" : \"SILENT\"}");
 
-        assertEquals(ext.getJSONStructure().asJsonObject(), entity.toJSONObject());        
+        assertEquals(ext.getJSONStructure().asJsonObject(), entity.toJSONObject());
     }
 
-    @Test public void testDetectRegion() {
+    @Test
+    public void testDetectRegion() {
         final ConfigurationApi entity = new ConfigurationApi();
         assertEquals(Region.GLOBAL, entity.detectRegion());
         entity.setRegion(Region.GLOBAL);
@@ -161,7 +171,8 @@ public class ConfigurationApiTest {
         assertEquals(Region.INTERNAL, entity.detectRegion());
     }
 
-    @Test public void testIsInternalConfiguration() {
+    @Test
+    public void testIsInternalConfiguration() {
         final String PID = "org.apache.sling.configuration";
         final ConfigurationApi api = new ConfigurationApi();
         // ootb nothing is internal
@@ -179,7 +190,8 @@ public class ConfigurationApiTest {
         assertTrue(api.isInternalConfiguration(PID));
     }
 
-    @Test public void testIsInternalFactoryConfigurationNoName() {
+    @Test
+    public void testIsInternalFactoryConfigurationNoName() {
         final String FACTORYPID = "org.apache.sling.configuration";
         final ConfigurationApi api = new ConfigurationApi();
         // ootb nothing is internal
@@ -197,7 +209,8 @@ public class ConfigurationApiTest {
         assertTrue(api.isInternalFactoryConfiguration(FACTORYPID, null));
     }
 
-    @Test public void testIsInternalFactoryConfigurationWithName() {
+    @Test
+    public void testIsInternalFactoryConfigurationWithName() {
         final String FACTORYPID = "org.apache.sling.configuration";
         final String NAME = "bar";
         final ConfigurationApi api = new ConfigurationApi();

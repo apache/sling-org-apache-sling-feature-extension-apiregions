@@ -1,26 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.feature.extension.apiregions.api;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -33,7 +29,6 @@ import java.util.Iterator;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonReader;
-
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionState;
@@ -41,12 +36,18 @@ import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.Feature;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 public class ApiRegionsTest {
 
     private String readJSON(final String name) throws IOException {
         try (final Reader reader = new InputStreamReader(
-                ApiRegionsTest.class.getResourceAsStream("/json/" + name + ".json"),
-                "UTF-8"); final Writer writer = new StringWriter()) {
+                        ApiRegionsTest.class.getResourceAsStream("/json/" + name + ".json"), "UTF-8");
+                final Writer writer = new StringWriter()) {
             int l;
             char[] buf = new char[2048];
             while ((l = reader.read(buf)) > -1) {
@@ -144,12 +145,14 @@ public class ApiRegionsTest {
         assertTrue(three.listExports().contains(new ApiExport("c")));
     }
 
-    @Test public void testNullFeature() {
-        assertNull(ApiRegions.getApiRegions((Feature)null));
+    @Test
+    public void testNullFeature() {
+        assertNull(ApiRegions.getApiRegions((Feature) null));
     }
 
-    @Test public void testNullExtension() {
-        assertNull(ApiRegions.getApiRegions((Extension)null));
+    @Test
+    public void testNullExtension() {
+        assertNull(ApiRegions.getApiRegions((Extension) null));
         final Feature f = new Feature(ArtifactId.parse("g:a:1.0"));
         assertNull(ApiRegions.getApiRegions(f));
     }
@@ -189,7 +192,8 @@ public class ApiRegionsTest {
         }
     }
 
-    @Test public void testToggles() throws Exception {
+    @Test
+    public void testToggles() throws Exception {
         final String json = readJSON("apis-toggles");
 
         final ApiRegions regions = ApiRegions.parse(json);

@@ -75,20 +75,22 @@ public class CheckApiRegionsBundleExportsImports implements AnalyserTask {
 
     @Override
     public void execute(final AnalyserTaskContext ctx) throws Exception {
-        boolean ignoreAPIRegions = ctx.getConfiguration().getOrDefault(
-                IGNORE_API_REGIONS_CONFIG_KEY, "false").equalsIgnoreCase("true");
+        boolean ignoreAPIRegions = ctx.getConfiguration()
+                .getOrDefault(IGNORE_API_REGIONS_CONFIG_KEY, "false")
+                .equalsIgnoreCase("true");
 
         final Map<BundleDescriptor, Report> reports = new HashMap<>();
 
         final SortedMap<Integer, List<BundleDescriptor>> bundlesMap = new TreeMap<>();
-        for(final BundleDescriptor bi : ctx.getFeatureDescriptor().getBundleDescriptors()) {
-            final List<BundleDescriptor> list = bundlesMap.computeIfAbsent(bi.getArtifact().getStartOrder(), key -> new ArrayList<>());
+        for (final BundleDescriptor bi : ctx.getFeatureDescriptor().getBundleDescriptors()) {
+            final List<BundleDescriptor> list =
+                    bundlesMap.computeIfAbsent(bi.getArtifact().getStartOrder(), key -> new ArrayList<>());
             list.add(bi);
         }
 
         // add all system packages
         final List<BundleDescriptor> exportingBundles = new ArrayList<>();
-        if ( ctx.getFrameworkDescriptor() != null ) {
+        if (ctx.getFrameworkDescriptor() != null) {
             exportingBundles.add(ctx.getFrameworkDescriptor());
         }
 
@@ -100,24 +102,24 @@ public class CheckApiRegionsBundleExportsImports implements AnalyserTask {
             ctx.reportError("API Region does not represent a valid JSON 'api-regions': " + e.getMessage());
             return;
         }
-        if ( apiRegions == null ) {
+        if (apiRegions == null) {
             apiRegions = new ApiRegions(); // Empty region as default
         }
 
-        for(final Map.Entry<Integer, List<BundleDescriptor>> entry : bundlesMap.entrySet()) {
+        for (final Map.Entry<Integer, List<BundleDescriptor>> entry : bundlesMap.entrySet()) {
             // first add all exporting bundles
-            for(final BundleDescriptor info : entry.getValue()) {
-                if ( !info.getExportedPackages().isEmpty() ) {
+            for (final BundleDescriptor info : entry.getValue()) {
+                if (!info.getExportedPackages().isEmpty()) {
                     exportingBundles.add(info);
                 }
             }
             // check importing bundles
-            for(final BundleDescriptor info : entry.getValue()) {
-                for(final PackageInfo pck : info.getImportedPackages() ) {
+            for (final BundleDescriptor info : entry.getValue()) {
+                for (final PackageInfo pck : info.getImportedPackages()) {
                     final Map<BundleDescriptor, Set<String>> candidates =
                             getCandidates(exportingBundles, pck, info, apiRegions, ignoreAPIRegions);
-                    if ( candidates.isEmpty() ) {
-                        if ( pck.isOptional() ) {
+                    if (candidates.isEmpty()) {
+                        if (pck.isOptional()) {
                             getReport(reports, info).missingExportsForOptional.add(pck);
                         } else {
                             getReport(reports, info).missingExports.add(pck);
@@ -127,7 +129,7 @@ public class CheckApiRegionsBundleExportsImports implements AnalyserTask {
 
                         Set<String> exportingRegions = new HashSet<>();
                         Set<String> importingRegions = new HashSet<>();
-                        for(final Map.Entry<BundleDescriptor, Set<String>> candidate : candidates.entrySet()) {
+                        for (final Map.Entry<BundleDescriptor, Set<String>> candidate : candidates.entrySet()) {
                             BundleDescriptor bd = candidate.getKey();
                             if (bd.isExportingPackage(pck)) {
                                 Set<String> exRegions = candidate.getValue();
@@ -148,15 +150,16 @@ public class CheckApiRegionsBundleExportsImports implements AnalyserTask {
                                 }
 
                                 // Find out what regions the importing bundle is in
-                                Set<String> imRegions =
-                                        getBundleRegions(info, apiRegions, ignoreAPIRegions);
+                                Set<String> imRegions = getBundleRegions(info, apiRegions, ignoreAPIRegions);
 
                                 // Record the exporting and importing regions for diagnostics
                                 exportingRegions.addAll(exRegions);
 
                                 Set<String> regions = new HashSet<>();
                                 for (String region : imRegions) {
-                                    for (ApiRegion r = apiRegions.getRegionByName(region); r != null; r = r.getParent()) {
+                                    for (ApiRegion r = apiRegions.getRegionByName(region);
+                                            r != null;
+                                            r = r.getParent()) {
                                         regions.add(r.getName());
                                     }
                                 }
@@ -173,14 +176,20 @@ public class CheckApiRegionsBundleExportsImports implements AnalyserTask {
                             }
                         }
 
-                        if ( matchingCandidates.isEmpty() ) {
-                            if ( pck.isOptional() ) {
-                                getReport(reports, info).missingExportsForOptional.add(pck);
+                        if (matchingCandidates.isEmpty()) {
+                            if (pck.isOptional()) {
+                                getReport(reports, info)
+                                        .missingExportsForOptional
+                                        .add(pck);
                             } else {
-                                getReport(reports, info).missingExportsWithVersion.add(pck);
-                                getReport(reports, info).regionInfo.put(pck, new AbstractMap.SimpleEntry<>(exportingRegions, importingRegions));
+                                getReport(reports, info)
+                                        .missingExportsWithVersion
+                                        .add(pck);
+                                getReport(reports, info)
+                                        .regionInfo
+                                        .put(pck, new AbstractMap.SimpleEntry<>(exportingRegions, importingRegions));
                             }
-                        } else if ( matchingCandidates.size() > 1 ) {
+                        } else if (matchingCandidates.size() > 1) {
                             getReport(reports, info).exportMatchingSeveral.add(pck);
                         }
                     }
@@ -189,26 +198,33 @@ public class CheckApiRegionsBundleExportsImports implements AnalyserTask {
         }
 
         boolean errorReported = false;
-        for(final Map.Entry<BundleDescriptor, Report> entry : reports.entrySet()) {
-            final String key = "Bundle " + entry.getKey().getArtifact().getId().getArtifactId() + ":" + entry.getKey().getArtifact().getId().getVersion();
+        for (final Map.Entry<BundleDescriptor, Report> entry : reports.entrySet()) {
+            final String key = "Bundle " + entry.getKey().getArtifact().getId().getArtifactId() + ":"
+                    + entry.getKey().getArtifact().getId().getVersion();
 
-            if ( !entry.getValue().missingExports.isEmpty() ) {
-                ctx.reportArtifactError(entry.getKey().getArtifact().getId(),
-                        key + " is importing package(s) " + getPackageInfo(entry.getValue().missingExports, false) + " in start level " +
-                        String.valueOf(entry.getKey().getArtifact().getStartOrder())
-                        + " but no bundle is exporting these for that start level.");
+            if (!entry.getValue().missingExports.isEmpty()) {
+                ctx.reportArtifactError(
+                        entry.getKey().getArtifact().getId(),
+                        key + " is importing package(s) " + getPackageInfo(entry.getValue().missingExports, false)
+                                + " in start level "
+                                + String.valueOf(entry.getKey().getArtifact().getStartOrder())
+                                + " but no bundle is exporting these for that start level.");
                 errorReported = true;
             }
-            if ( !entry.getValue().missingExportsWithVersion.isEmpty() ) {
-                StringBuilder message = new StringBuilder(key + " is importing package(s) " + getPackageInfo(entry.getValue().missingExportsWithVersion, true) + " in start level " +
-                        String.valueOf(entry.getKey().getArtifact().getStartOrder())
-                        + " but no visible bundle is exporting these for that start level in the required version range.");
+            if (!entry.getValue().missingExportsWithVersion.isEmpty()) {
+                StringBuilder message = new StringBuilder(
+                        key + " is importing package(s) "
+                                + getPackageInfo(entry.getValue().missingExportsWithVersion, true) + " in start level "
+                                + String.valueOf(entry.getKey().getArtifact().getStartOrder())
+                                + " but no visible bundle is exporting these for that start level in the required version range.");
 
-                for (Map.Entry<PackageInfo, Map.Entry<Set<String>, Set<String>>> regionInfoEntry : entry.getValue().regionInfo.entrySet()) {
+                for (Map.Entry<PackageInfo, Map.Entry<Set<String>, Set<String>>> regionInfoEntry :
+                        entry.getValue().regionInfo.entrySet()) {
                     PackageInfo pkg = regionInfoEntry.getKey();
                     Map.Entry<Set<String>, Set<String>> regions = regionInfoEntry.getValue();
                     if (regions.getKey().size() > 0) {
-                        message.append("\n" + pkg.getName() + " is exported in regions " + regions.getKey() + " but it is imported in regions " + regions.getValue());
+                        message.append("\n" + pkg.getName() + " is exported in regions " + regions.getKey()
+                                + " but it is imported in regions " + regions.getValue());
                     }
                 }
                 ctx.reportArtifactError(entry.getKey().getArtifact().getId(), message.toString());
@@ -221,8 +237,13 @@ public class CheckApiRegionsBundleExportsImports implements AnalyserTask {
     }
 
     private Set<String> getBundleRegions(BundleDescriptor info, ApiRegions regions, boolean ignoreAPIRegions) {
-        Set<String> result = ignoreAPIRegions ? Collections.emptySet() : Stream.of(info.getArtifact().getFeatureOrigins())
-            .map(regions::getRegionsByFeature).flatMap(Stream::of).map(ApiRegion::getName).collect(Collectors.toSet());
+        Set<String> result = ignoreAPIRegions
+                ? Collections.emptySet()
+                : Stream.of(info.getArtifact().getFeatureOrigins())
+                        .map(regions::getRegionsByFeature)
+                        .flatMap(Stream::of)
+                        .map(ApiRegion::getName)
+                        .collect(Collectors.toSet());
 
         if (result.isEmpty()) {
             result = new HashSet<>();
@@ -231,9 +252,8 @@ public class CheckApiRegionsBundleExportsImports implements AnalyserTask {
         return result;
     }
 
-
     private String getPackageInfo(final List<PackageInfo> pcks, final boolean includeVersion) {
-        if ( pcks.size() == 1 ) {
+        if (pcks.size() == 1) {
             if (includeVersion) {
                 return pcks.get(0).toString();
             } else {
@@ -243,8 +263,8 @@ public class CheckApiRegionsBundleExportsImports implements AnalyserTask {
         final StringBuilder sb = new StringBuilder();
         boolean first = true;
         sb.append('[');
-        for(final PackageInfo info : pcks) {
-            if ( first ) {
+        for (final PackageInfo info : pcks) {
+            if (first) {
                 first = false;
             } else {
                 sb.append(", ");
@@ -263,19 +283,29 @@ public class CheckApiRegionsBundleExportsImports implements AnalyserTask {
             final List<BundleDescriptor> exportingBundles,
             final PackageInfo pck,
             final BundleDescriptor requestingBundle,
-            final ApiRegions apiRegions, boolean ignoreAPIRegions) {
-        Set<String> rf = ignoreAPIRegions ? Collections.emptySet() : Stream.of(requestingBundle.getArtifact().getFeatureOrigins()).map(ArtifactId::toMvnId).collect(Collectors.toSet());
+            final ApiRegions apiRegions,
+            boolean ignoreAPIRegions) {
+        Set<String> rf = ignoreAPIRegions
+                ? Collections.emptySet()
+                : Stream.of(requestingBundle.getArtifact().getFeatureOrigins())
+                        .map(ArtifactId::toMvnId)
+                        .collect(Collectors.toSet());
 
         final Set<String> requestingFeatures = rf;
 
         final Map<BundleDescriptor, Set<String>> candidates = new HashMap<>();
-        for(final BundleDescriptor info : exportingBundles) {
-            if ( info.isExportingPackage(pck.getName()) ) {
-                Set<String> providingFeatures = ignoreAPIRegions ? Collections.emptySet() : Stream.of(info.getArtifact().getFeatureOrigins()).map(ArtifactId::toMvnId).collect(Collectors.toSet());
+        for (final BundleDescriptor info : exportingBundles) {
+            if (info.isExportingPackage(pck.getName())) {
+                Set<String> providingFeatures = ignoreAPIRegions
+                        ? Collections.emptySet()
+                        : Stream.of(info.getArtifact().getFeatureOrigins())
+                                .map(ArtifactId::toMvnId)
+                                .collect(Collectors.toSet());
 
                 // Compute the intersection without modifying the sets
-                Set<String> intersection = providingFeatures.stream().filter(
-                        s -> requestingFeatures.contains(s)).collect(Collectors.toSet());
+                Set<String> intersection = providingFeatures.stream()
+                        .filter(s -> requestingFeatures.contains(s))
+                        .collect(Collectors.toSet());
                 if (!intersection.isEmpty()) {
                     // A requesting bundle can see all exported packages inside its own feature
                     candidates.put(info, Collections.singleton(OWN_FEATURE));
@@ -283,8 +313,8 @@ public class CheckApiRegionsBundleExportsImports implements AnalyserTask {
                 }
 
                 for (String region : getBundleRegions(info, apiRegions, ignoreAPIRegions)) {
-                    if (!NO_REGION.equals(region) &&
-                            (apiRegions.getRegionByName(region) == null
+                    if (!NO_REGION.equals(region)
+                            && (apiRegions.getRegionByName(region) == null
                                     || apiRegions.getRegionByName(region).getAllExportByName(pck.getName()) == null))
                         continue;
 

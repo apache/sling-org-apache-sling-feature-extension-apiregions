@@ -1,20 +1,31 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.feature.extension.apiregions.api.config;
+
+import java.io.IOException;
+import java.util.Arrays;
+
+import jakarta.json.Json;
+import org.apache.sling.feature.Extension;
+import org.apache.sling.feature.ExtensionState;
+import org.apache.sling.feature.ExtensionType;
+import org.junit.Test;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -24,19 +35,10 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.IOException;
-import java.util.Arrays;
-
-import jakarta.json.Json;
-
-import org.apache.sling.feature.Extension;
-import org.apache.sling.feature.ExtensionState;
-import org.apache.sling.feature.ExtensionType;
-import org.junit.Test;
-
 public class PropertyDescriptionTest {
 
-    @Test public void testClear() {
+    @Test
+    public void testClear() {
         final PropertyDescription entity = new PropertyDescription();
         entity.getAttributes().put("a", Json.createValue(5));
         entity.setDeprecated("d");
@@ -74,11 +76,12 @@ public class PropertyDescriptionTest {
         assertEquals(PlaceholderPolicy.DEFAULT, entity.getPlaceholderPolicy());
     }
 
-    @Test public void testFromJSONObject() throws IOException {
+    @Test
+    public void testFromJSONObject() throws IOException {
         final Extension ext = new Extension(ExtensionType.JSON, "a", ExtensionState.OPTIONAL);
-        ext.setJSON("{ \"type\" : \"BYTE\", \"cardinality\": 5, \"required\" : true, \"variable\" : \"var\"," +
-        "\"range\" : {}, \"includes\" : [\"in\"], \"excludes\" : [\"ex\"] , \"options\": [{}], \"regex\": \".\"," +
-        "\"default\" : \"def\", \"placeholder-policy\" : \"DENY\", \"placeholder-regex\": \"my-regex\"}");
+        ext.setJSON("{ \"type\" : \"BYTE\", \"cardinality\": 5, \"required\" : true, \"variable\" : \"var\","
+                + "\"range\" : {}, \"includes\" : [\"in\"], \"excludes\" : [\"ex\"] , \"options\": [{}], \"regex\": \".\","
+                + "\"default\" : \"def\", \"placeholder-policy\" : \"DENY\", \"placeholder-regex\": \"my-regex\"}");
 
         final PropertyDescription entity = new PropertyDescription();
         entity.fromJSONObject(ext.getJSONStructure().asJsonObject());
@@ -113,9 +116,10 @@ public class PropertyDescriptionTest {
         assertNotNull(entity.getRegexPattern());
         assertEquals(PlaceholderPolicy.DEFAULT, entity.getPlaceholderPolicy());
         assertNull(entity.getPlaceholderRegex());
-   }
+    }
 
-    @Test public void testToJSONObject() throws IOException {
+    @Test
+    public void testToJSONObject() throws IOException {
         final PropertyDescription entity = new PropertyDescription();
         entity.setCardinality(5);
         entity.setExcludes(new String[] {"ex"});
@@ -131,9 +135,9 @@ public class PropertyDescriptionTest {
         entity.setPlaceholderRegex("^.*$");
 
         final Extension ext = new Extension(ExtensionType.JSON, "a", ExtensionState.OPTIONAL);
-        ext.setJSON("{ \"type\" : \"BYTE\", \"cardinality\": 5, \"required\" : true, \"variable\" : \"var\"," +
-            "\"range\" : {}, \"includes\" : [\"in\"], \"excludes\" : [\"ex\"] , \"options\": [{}], \"regex\": \".\"," +
-            "\"default\" : \"def\", \"placeholder-policy\" : \"DENY\", \"placeholder-regex\": \"^.*$\"}");
+        ext.setJSON("{ \"type\" : \"BYTE\", \"cardinality\": 5, \"required\" : true, \"variable\" : \"var\","
+                + "\"range\" : {}, \"includes\" : [\"in\"], \"excludes\" : [\"ex\"] , \"options\": [{}], \"regex\": \".\","
+                + "\"default\" : \"def\", \"placeholder-policy\" : \"DENY\", \"placeholder-regex\": \"^.*$\"}");
 
         assertEquals(ext.getJSONStructure().asJsonObject(), entity.toJSONObject());
 
@@ -154,7 +158,8 @@ public class PropertyDescriptionTest {
         assertEquals(ext.getJSONStructure().asJsonObject(), entity.toJSONObject());
     }
 
-    @Test public void testSetCardinality() {
+    @Test
+    public void testSetCardinality() {
         final PropertyDescription desc = new PropertyDescription();
         desc.setCardinality(5);
         assertEquals(5, desc.getCardinality());
@@ -166,18 +171,19 @@ public class PropertyDescriptionTest {
         try {
             desc.setCardinality(0);
             fail();
-        } catch ( final IllegalArgumentException iae) {
+        } catch (final IllegalArgumentException iae) {
             // expected
         }
         try {
             desc.setCardinality(-2);
             fail();
-        } catch ( final IllegalArgumentException iae) {
+        } catch (final IllegalArgumentException iae) {
             // expected
         }
     }
 
-    @Test public void testSerialisingMode() throws IOException {
+    @Test
+    public void testSerialisingMode() throws IOException {
         final PropertyDescription entity = new PropertyDescription();
         entity.setMode(Mode.SILENT);
 

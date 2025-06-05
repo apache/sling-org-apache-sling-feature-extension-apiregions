@@ -1,26 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
- package org.apache.sling.feature.extension.apiregions;
-
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+package org.apache.sling.feature.extension.apiregions;
 
 import java.util.Arrays;
 
@@ -40,9 +36,16 @@ import org.apache.sling.feature.extension.apiregions.api.config.PropertyDescript
 import org.apache.sling.feature.extension.apiregions.api.config.Region;
 import org.junit.Test;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 public class ConfigurationApiMergeHandlerTest {
 
-    @Test public void testPrototypeRegionMerge() {
+    @Test
+    public void testPrototypeRegionMerge() {
         final Feature prototype = new Feature(ArtifactId.parse("g:p:1"));
         final ConfigurationApi prototypeApi = new ConfigurationApi();
         ConfigurationApi.setConfigurationApi(prototype, prototypeApi);
@@ -50,7 +53,7 @@ public class ConfigurationApiMergeHandlerTest {
         // always return prototype
         final BuilderContext context = new BuilderContext(id -> prototype);
         context.addMergeExtensions(new ConfigurationApiMergeHandler());
-        
+
         final Feature feature = new Feature(ArtifactId.parse("g:f:1"));
         feature.setPrototype(new Prototype(prototype.getId()));
         final ConfigurationApi featureApi = new ConfigurationApi();
@@ -141,15 +144,16 @@ public class ConfigurationApiMergeHandlerTest {
         assertEquals(1, api.getFeatureToRegionCache().size());
         assertEquals(Region.GLOBAL, api.getFeatureToRegionCache().get(prototype.getId()));
     }
- 
-    @Test public void testRegionMerge() {
+
+    @Test
+    public void testRegionMerge() {
         final BuilderContext context = new BuilderContext(id -> null);
         context.addMergeExtensions(new ConfigurationApiMergeHandler());
 
         final Feature featureA = new Feature(ArtifactId.parse("g:a:1"));
         final ConfigurationApi apiA = new ConfigurationApi();
         ConfigurationApi.setConfigurationApi(featureA, apiA);
-        
+
         final Feature featureB = new Feature(ArtifactId.parse("g:b:1"));
         final ConfigurationApi apiB = new ConfigurationApi();
         ConfigurationApi.setConfigurationApi(featureB, apiB);
@@ -250,7 +254,8 @@ public class ConfigurationApiMergeHandlerTest {
         assertEquals(Region.GLOBAL, api.getFeatureToRegionCache().get(featureB.getId()));
     }
 
-    @Test public void testConfigurationApiMergeDifferentConfig() {
+    @Test
+    public void testConfigurationApiMergeDifferentConfig() {
         final BuilderContext context = new BuilderContext(id -> null);
         context.addMergeExtensions(new ConfigurationApiMergeHandler());
 
@@ -260,7 +265,7 @@ public class ConfigurationApiMergeHandlerTest {
         apiA.getFactoryConfigurationDescriptions().put("fa", new FactoryConfigurationDescription());
         apiA.getFrameworkPropertyDescriptions().put("pa", new FrameworkPropertyDescription());
         ConfigurationApi.setConfigurationApi(featureA, apiA);
-        
+
         final Feature featureB = new Feature(ArtifactId.parse("g:b:1"));
         final ConfigurationApi apiB = new ConfigurationApi();
         apiB.getConfigurationDescriptions().put("b", new ConfigurationDescription());
@@ -295,7 +300,7 @@ public class ConfigurationApiMergeHandlerTest {
         final ConfigurationApi apiA = new ConfigurationApi();
         apiA.getConfigurationDescriptions().put("a", new ConfigurationDescription());
         ConfigurationApi.setConfigurationApi(featureA, apiA);
-        
+
         final Feature featureB = new Feature(ArtifactId.parse("g:b:1"));
         final ConfigurationApi apiB = new ConfigurationApi();
         apiB.getConfigurationDescriptions().put("a", new ConfigurationDescription());
@@ -314,7 +319,7 @@ public class ConfigurationApiMergeHandlerTest {
         final ConfigurationApi apiA = new ConfigurationApi();
         apiA.getFactoryConfigurationDescriptions().put("fa", new FactoryConfigurationDescription());
         ConfigurationApi.setConfigurationApi(featureA, apiA);
-        
+
         final Feature featureB = new Feature(ArtifactId.parse("g:b:1"));
         final ConfigurationApi apiB = new ConfigurationApi();
         apiB.getFactoryConfigurationDescriptions().put("fa", new FactoryConfigurationDescription());
@@ -333,7 +338,7 @@ public class ConfigurationApiMergeHandlerTest {
         final ConfigurationApi apiA = new ConfigurationApi();
         apiA.getFrameworkPropertyDescriptions().put("pa", new FrameworkPropertyDescription());
         ConfigurationApi.setConfigurationApi(featureA, apiA);
-        
+
         final Feature featureB = new Feature(ArtifactId.parse("g:b:1"));
         final ConfigurationApi apiB = new ConfigurationApi();
         apiB.getFrameworkPropertyDescriptions().put("pa", new FrameworkPropertyDescription());
@@ -343,7 +348,8 @@ public class ConfigurationApiMergeHandlerTest {
         FeatureBuilder.assemble(id, context, featureA, featureB);
     }
 
-    @Test public void testConfigurationApiMergeInternalNames() {
+    @Test
+    public void testConfigurationApiMergeInternalNames() {
         final BuilderContext context = new BuilderContext(id -> null);
         context.addMergeExtensions(new ConfigurationApiMergeHandler());
 
@@ -353,7 +359,7 @@ public class ConfigurationApiMergeHandlerTest {
 
         apiA.getInternalFrameworkProperties().add("pc");
         ConfigurationApi.setConfigurationApi(featureA, apiA);
-        
+
         final Feature featureB = new Feature(ArtifactId.parse("g:b:1"));
         final ConfigurationApi apiB = new ConfigurationApi();
         apiB.getInternalFrameworkProperties().add("pb");
@@ -372,7 +378,8 @@ public class ConfigurationApiMergeHandlerTest {
         assertTrue(api.getInternalFrameworkProperties().contains("pc"));
     }
 
-    @Test public void testConfigurationApiMergeRegionCache() {
+    @Test
+    public void testConfigurationApiMergeRegionCache() {
         final BuilderContext context = new BuilderContext(id -> null);
         context.addMergeExtensions(new ConfigurationApiMergeHandler());
 
@@ -403,7 +410,6 @@ public class ConfigurationApiMergeHandlerTest {
         ConfigurationApi api = ConfigurationApi.getConfigurationApi(result);
         assertNotNull(api);
 
-
         assertEquals(5, api.getFeatureToRegionCache().size());
         assertEquals(Region.INTERNAL, api.getFeatureToRegionCache().get(featureA.getId()));
         assertEquals(Region.GLOBAL, api.getFeatureToRegionCache().get(featureB.getId()));
@@ -412,7 +418,8 @@ public class ConfigurationApiMergeHandlerTest {
         assertEquals(Region.GLOBAL, api.getFeatureToRegionCache().get(idIntermediate));
     }
 
-    @Test public void testConfigurationAdditions() {
+    @Test
+    public void testConfigurationAdditions() {
         final ConfigurationDescriptionAddition cda1 = new ConfigurationDescriptionAddition();
         final PropertyDescriptionAddition pda11 = new PropertyDescriptionAddition();
         pda11.setIncludes(new String[] {"c"});
@@ -469,25 +476,32 @@ public class ConfigurationApiMergeHandlerTest {
 
         final ConfigurationApi resultApi = ConfigurationApi.getConfigurationApi(result);
         assertTrue(resultApi.getConfigurationDescriptionAdditions().isEmpty());
-        final ConfigurationDescription resultCD1 = resultApi.getConfigurationDescriptions().get("pid1");
+        final ConfigurationDescription resultCD1 =
+                resultApi.getConfigurationDescriptions().get("pid1");
         assertNotNull(resultCD1);
-        final PropertyDescription resultPD11 = resultCD1.getPropertyDescriptions().get("p1");
+        final PropertyDescription resultPD11 =
+                resultCD1.getPropertyDescriptions().get("p1");
         assertNotNull(resultPD11);
         assertArrayEquals(new String[] {"a", "b", "c"}, resultPD11.getIncludes());
-        final PropertyDescription resultPD12 = resultCD1.getPropertyDescriptions().get("p2");
+        final PropertyDescription resultPD12 =
+                resultCD1.getPropertyDescriptions().get("p2");
         assertNotNull(resultPD12);
         assertArrayEquals(new String[] {"x"}, resultPD12.getIncludes());
-        final ConfigurationDescription resultCD2 = resultApi.getConfigurationDescriptions().get("pid2");
+        final ConfigurationDescription resultCD2 =
+                resultApi.getConfigurationDescriptions().get("pid2");
         assertNotNull(resultCD2);
-        final PropertyDescription resultPD21 = resultCD2.getPropertyDescriptions().get("p3");
+        final PropertyDescription resultPD21 =
+                resultCD2.getPropertyDescriptions().get("p3");
         assertNotNull(resultPD21);
         assertArrayEquals(new String[] {"a", "b", "d"}, resultPD21.getIncludes());
-        final PropertyDescription resultPD22 = resultCD2.getPropertyDescriptions().get("p4");
+        final PropertyDescription resultPD22 =
+                resultCD2.getPropertyDescriptions().get("p4");
         assertNotNull(resultPD22);
         assertArrayEquals(new String[] {"y"}, resultPD22.getIncludes());
     }
 
-    @Test public void testFactoryConfigurationAdditions() {
+    @Test
+    public void testFactoryConfigurationAdditions() {
         final FactoryConfigurationDescriptionAddition cda1 = new FactoryConfigurationDescriptionAddition();
         final PropertyDescriptionAddition pda11 = new PropertyDescriptionAddition();
         pda11.setIncludes(new String[] {"c"});
@@ -547,27 +561,34 @@ public class ConfigurationApiMergeHandlerTest {
 
         final ConfigurationApi resultApi = ConfigurationApi.getConfigurationApi(result);
         assertTrue(resultApi.getFactoryConfigurationDescriptionAdditions().isEmpty());
-        final FactoryConfigurationDescription resultCD1 = resultApi.getFactoryConfigurationDescriptions().get("factory1");
+        final FactoryConfigurationDescription resultCD1 =
+                resultApi.getFactoryConfigurationDescriptions().get("factory1");
         assertNotNull(resultCD1);
         assertEquals(Arrays.asList("i1", "mrx"), resultCD1.getInternalNames());
-        final PropertyDescription resultPD11 = resultCD1.getPropertyDescriptions().get("p1");
+        final PropertyDescription resultPD11 =
+                resultCD1.getPropertyDescriptions().get("p1");
         assertNotNull(resultPD11);
         assertArrayEquals(new String[] {"a", "b", "c"}, resultPD11.getIncludes());
-        final PropertyDescription resultPD12 = resultCD1.getPropertyDescriptions().get("p2");
+        final PropertyDescription resultPD12 =
+                resultCD1.getPropertyDescriptions().get("p2");
         assertNotNull(resultPD12);
         assertArrayEquals(new String[] {"x"}, resultPD12.getIncludes());
-        final FactoryConfigurationDescription resultCD2 = resultApi.getFactoryConfigurationDescriptions().get("factory2");
+        final FactoryConfigurationDescription resultCD2 =
+                resultApi.getFactoryConfigurationDescriptions().get("factory2");
         assertNotNull(resultCD2);
         assertEquals(Arrays.asList("i2"), resultCD2.getInternalNames());
-        final PropertyDescription resultPD21 = resultCD2.getPropertyDescriptions().get("p3");
+        final PropertyDescription resultPD21 =
+                resultCD2.getPropertyDescriptions().get("p3");
         assertNotNull(resultPD21);
         assertArrayEquals(new String[] {"a", "b", "d"}, resultPD21.getIncludes());
-        final PropertyDescription resultPD22 = resultCD2.getPropertyDescriptions().get("p4");
+        final PropertyDescription resultPD22 =
+                resultCD2.getPropertyDescriptions().get("p4");
         assertNotNull(resultPD22);
         assertArrayEquals(new String[] {"y"}, resultPD22.getIncludes());
     }
 
-    @Test public void testConfigurationAdditionsConfigDoesNotExist() {
+    @Test
+    public void testConfigurationAdditionsConfigDoesNotExist() {
         final ConfigurationDescriptionAddition cda = new ConfigurationDescriptionAddition();
         final PropertyDescriptionAddition pda = new PropertyDescriptionAddition();
         pda.setIncludes(new String[] {"a"});
@@ -602,7 +623,7 @@ public class ConfigurationApiMergeHandlerTest {
         assertNotNull(resultApi.getFactoryConfigurationDescriptionAdditions().get("factory2"));
     }
 
-    @Test(expected = IllegalStateException.class) 
+    @Test(expected = IllegalStateException.class)
     public void testConfigurationAdditionsConfigPropDoesNotExist() {
         final ConfigurationDescriptionAddition cda = new ConfigurationDescriptionAddition();
         final PropertyDescriptionAddition pda = new PropertyDescriptionAddition();
@@ -627,7 +648,7 @@ public class ConfigurationApiMergeHandlerTest {
         FeatureBuilder.assemble(id, context, featureA, featureB);
     }
 
-    @Test(expected = IllegalStateException.class) 
+    @Test(expected = IllegalStateException.class)
     public void testConfigurationAdditionsFactoryConfigPropDoesNotExist() {
         final FactoryConfigurationDescriptionAddition cda = new FactoryConfigurationDescriptionAddition();
         final PropertyDescriptionAddition pda = new PropertyDescriptionAddition();

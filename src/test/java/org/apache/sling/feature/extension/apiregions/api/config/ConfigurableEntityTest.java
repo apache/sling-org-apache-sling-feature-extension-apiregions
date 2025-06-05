@@ -1,35 +1,36 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.feature.extension.apiregions.api.config;
+
+import java.io.IOException;
+
+import jakarta.json.Json;
+import org.apache.sling.feature.Extension;
+import org.apache.sling.feature.ExtensionState;
+import org.apache.sling.feature.ExtensionType;
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-
-import jakarta.json.Json;
-
-import org.apache.sling.feature.Extension;
-import org.apache.sling.feature.ExtensionState;
-import org.apache.sling.feature.ExtensionType;
-import org.junit.Test;
 
 public class ConfigurableEntityTest {
 
@@ -41,7 +42,8 @@ public class ConfigurableEntityTest {
         }
     }
 
-    @Test public void testClear() {
+    @Test
+    public void testClear() {
         final CE entity = new CE();
         entity.getAttributes().put("a", Json.createValue(5));
         entity.setDeprecated("d");
@@ -61,7 +63,8 @@ public class ConfigurableEntityTest {
         assertEquals(Region.GLOBAL, entity.getRegion());
     }
 
-    @Test public void testFromJSONObject() throws IOException {
+    @Test
+    public void testFromJSONObject() throws IOException {
         final Extension ext = new Extension(ExtensionType.JSON, "a", ExtensionState.OPTIONAL);
         ext.setJSON("{ \"properties\" : { \"a\" : {}, \"b\" : {}}}");
 
@@ -72,7 +75,8 @@ public class ConfigurableEntityTest {
         assertNotNull(entity.getPropertyDescriptions().get("b"));
     }
 
-    @Test public void testToJSONObject() throws IOException {
+    @Test
+    public void testToJSONObject() throws IOException {
         final CE entity = new CE();
         entity.getPropertyDescriptions().put("a", new PropertyDescription());
         entity.getPropertyDescriptions().put("b", new PropertyDescription());
@@ -83,7 +87,7 @@ public class ConfigurableEntityTest {
         assertEquals(ext.getJSONStructure().asJsonObject(), entity.toJSONObject());
     }
 
-    @Test(expected = IOException.class) 
+    @Test(expected = IOException.class)
     public void testDuplicateCaseInsensitiveKeys() throws IOException {
         final Extension ext = new Extension(ExtensionType.JSON, "a", ExtensionState.OPTIONAL);
         ext.setJSON("{ \"properties\" : { \"a\" : {}, \"A\" : {}}}");
@@ -92,7 +96,8 @@ public class ConfigurableEntityTest {
         entity.fromJSONObject(ext.getJSONStructure().asJsonObject());
     }
 
-    @Test public void testSerialisingMode() throws IOException {
+    @Test
+    public void testSerialisingMode() throws IOException {
         final CE entity = new CE();
         entity.setMode(Mode.SILENT);
 
@@ -105,7 +110,8 @@ public class ConfigurableEntityTest {
         assertEquals(Mode.SILENT, entity.getMode());
     }
 
-    @Test public void testSerialisingRegion() throws IOException {
+    @Test
+    public void testSerialisingRegion() throws IOException {
         final CE entity = new CE();
         entity.setRegion(Region.INTERNAL);
 
@@ -118,7 +124,8 @@ public class ConfigurableEntityTest {
         assertEquals(Region.INTERNAL, entity.getRegion());
     }
 
-    @Test public void testSerialisingAllowAdditionalProperties() throws IOException {
+    @Test
+    public void testSerialisingAllowAdditionalProperties() throws IOException {
         final CE entity = new CE();
         entity.setAllowAdditionalProperties(true);
 
@@ -131,7 +138,8 @@ public class ConfigurableEntityTest {
         assertTrue(entity.isAllowAdditionalProperties());
     }
 
-    @Test public void testSerialisingInternalProperties() throws IOException {
+    @Test
+    public void testSerialisingInternalProperties() throws IOException {
         final CE entity = new CE();
         entity.getInternalPropertyNames().add("a");
         entity.getInternalPropertyNames().add("b");
