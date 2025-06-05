@@ -34,4 +34,7 @@ abstract class InternalConstants {
     static final String KEY_BUNDLE_VERSION_RULES = "bundle-version-rules";
 
     static final String KEY_ARTIFACT_VERSION_RULES = "artifact-version-rules";
+
+    /** @since 2.10 */
+    static final String KEY_ENFORCE_ON = "enforce-on";
 }

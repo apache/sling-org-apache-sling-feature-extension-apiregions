@@ -17,6 +17,7 @@
 package org.apache.sling.feature.extension.apiregions.api.artifacts;
 
 import java.io.IOException;
+import java.util.Calendar;
 
 import jakarta.json.JsonException;
 import jakarta.json.JsonObject;
@@ -48,6 +49,13 @@ public class VersionRule extends AttributeableEntity {
     /** The denied version ranges */
     private VersionRange[] deniedVersionRanges;
 
+  	/**
+	 * Optional enforce on information.
+	 * @since 2.1.0
+	 */
+	private String enforceOn;
+
+
     /**
      * Create a new rules object
      */
@@ -66,6 +74,7 @@ public class VersionRule extends AttributeableEntity {
         this.setMessage(null);
         this.setAllowedVersionRanges(null);
         this.setDeniedVersionRanges(null);
+        this.setEnforceOn(null);
     }
 
     /**
@@ -103,6 +112,8 @@ public class VersionRule extends AttributeableEntity {
             this.setStringArray(objBuilder, InternalConstants.KEY_DENIED_VERSION_RANGES, arr);
         }
 
+        this.setString(objBuilder, InternalConstants.KEY_ENFORCE_ON, this.getEnforceOn());
+
         return objBuilder;
     }
 
@@ -121,7 +132,7 @@ public class VersionRule extends AttributeableEntity {
 			if ( val != null ) {
                 this.setMode(Mode.valueOf(val.toUpperCase()));
 			}
-            
+
             val = this.getString(InternalConstants.KEY_ARTIFACT_ID);
             if ( val != null ) {
                 this.setArtifactId(ArtifactId.parse(val));
@@ -154,6 +165,8 @@ public class VersionRule extends AttributeableEntity {
                 }
                 this.setDeniedVersionRanges(ranges);
             }
+
+            this.setEnforceOn(this.getString(InternalConstants.KEY_ENFORCE_ON));
         } catch (final JsonException | IllegalArgumentException e) {
             throw new IOException(e);
         }
@@ -265,5 +278,71 @@ public class VersionRule extends AttributeableEntity {
         }
         return result;
 
+    }
+
+    private Calendar parseDate(final String value) {
+        final String[] parts = value.split("-");
+        if ( parts.length == 3 ) {
+            if ( parts[0].length() == 4 && parts[1].length() == 2 && parts[2].length() == 2 ) {
+                try {
+                    final int year = Integer.parseInt(parts[0]);
+                    final int month = Integer.parseInt(parts[1]);
+                    final int day = Integer.parseInt(parts[2]);
+
+                    final Calendar c = Calendar.getInstance();
+                    c.set(Calendar.YEAR, year);
+                    c.set(Calendar.MONTH, month - 1);
+                    c.set(Calendar.DAY_OF_MONTH, day);
+
+                    c.set(Calendar.HOUR_OF_DAY, 1);
+                    c.set(Calendar.MINUTE, 0);
+                    c.set(Calendar.SECOND, 0);
+                    c.set(Calendar.MILLISECOND, 0);
+
+                    return c;
+                } catch ( final NumberFormatException ignore ) {
+                    // ignore
+                }
+            }
+        }
+        return null;
+    }
+
+	/**
+	 * Get the optional enforce on information. This must be a date in the format 'YYYY-MM-DD'.
+	 * @return The since information or {@code null}
+     * @since 2.1.0
+	 */
+	public String getEnforceOn() {
+		return enforceOn;
+	}
+
+	/**
+	 * Set the enforce on information. This must be a date in the format 'YYYY-MM-DD'.
+	 * @param enforceOn The new info or {@code null} to remove it
+     * @since 2.1.0
+     * @throw IllegalArgumentException If the format is not correct
+	 */
+	public void setEnforceOn(final String enforceOn) {
+        if (enforceOn == null || parseDate(enforceOn) != null) {
+		    this.enforceOn = enforceOn;
+        } else {
+            throw new IllegalArgumentException("Enforce on date must be in the format 'YYYY-MM-DD'");
+        }
+	}
+
+    /**
+     * Return a date by which this rule is enforced
+     * @return A calendar if the value from {@link #getEnforceOn()} is set or yesterday
+     * @since 2.1.0
+     */
+    public Calendar getEnforceOnDate() {
+        Calendar result = this.enforceOn == null ? null : this.parseDate(this.enforceOn);
+        if ( result == null ) {
+            // if not set, return yesterday
+            result = Calendar.getInstance();
+            result.add(Calendar.DAY_OF_YEAR, -1);
+        }
+        return result;
     }
 }

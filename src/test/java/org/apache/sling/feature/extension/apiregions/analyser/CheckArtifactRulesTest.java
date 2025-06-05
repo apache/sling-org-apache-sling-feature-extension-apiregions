@@ -18,6 +18,10 @@ package org.apache.sling.feature.extension.apiregions.analyser;
 
 import static org.mockito.Mockito.when;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Extension;
@@ -36,7 +40,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 public class CheckArtifactRulesTest {
-    
+
     private CheckArtifactRules analyser = new CheckArtifactRules();
 
     private AnalyserTaskContext newContext(final Feature f) {
@@ -57,7 +61,7 @@ public class CheckArtifactRulesTest {
                 for(final Artifact a : ext.getArtifacts()) {
                     final ArtifactDescriptor bd = Mockito.mock(ArtifactDescriptor.class);
                     when(bd.getArtifact()).thenReturn(a);
-                    fd.getArtifactDescriptors().add(bd);        
+                    fd.getArtifactDescriptors().add(bd);
                 }
             }
         }
@@ -98,12 +102,71 @@ public class CheckArtifactRulesTest {
         final ArtifactRules rules = new ArtifactRules();
         rules.getBundleVersionRules().add(r);
         rules.getArtifactVersionRules().add(r2);
-        
+
         ArtifactRules.setArtifactRules(f, rules);
         final AnalyserTaskContext context = newContext(f);
         analyser.execute(context);
 
         Mockito.verify(context, Mockito.atLeastOnce()).reportArtifactError(Mockito.eq(bundle.getId()), Mockito.eq(r.getMessage()));
         Mockito.verify(context, Mockito.atLeastOnce()).reportArtifactError(Mockito.eq(artifact.getId()), Mockito.eq(r2.getMessage()));
+    }
+
+    @Test public void testValidateFeatureEnforceOnNotReached() throws Exception {
+        final Feature f = new Feature(ArtifactId.parse("g:a:1"));
+        final Artifact bundle = new Artifact(ArtifactId.parse("g:b:1.1"));
+        f.getBundles().add(bundle);
+
+        final Calendar tomorrow = Calendar.getInstance();
+        final DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+        tomorrow.add(Calendar.DAY_OF_MONTH, 1);
+        final VersionRule r = new VersionRule();
+        r.setArtifactId(bundle.getId());
+        r.setMode(Mode.STRICT);
+        r.setMessage("foo");
+        r.setEnforceOn(df.format(tomorrow.getTime()));
+
+        final ArtifactRules rules = new ArtifactRules();
+        rules.getBundleVersionRules().add(r);
+
+        ArtifactRules.setArtifactRules(f, rules);
+        final AnalyserTaskContext context = newContext(f);
+        analyser.execute(context);
+
+        final String reportMsg = r.getMessage().concat(" Enforce on: ").concat(r.getEnforceOn());
+        Mockito.verify(context, Mockito.atLeastOnce()).reportArtifactWarning(Mockito.eq(bundle.getId()), Mockito.eq(reportMsg));
+    }
+
+    @Test public void testValidateFeatureEnforceOnReached() throws Exception {
+        final Feature f = new Feature(ArtifactId.parse("g:a:1"));
+        final Artifact bundle = new Artifact(ArtifactId.parse("g:b:1.1"));
+        f.getBundles().add(bundle);
+
+        final Calendar tomorrow = Calendar.getInstance();
+        final DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+        tomorrow.add(Calendar.DAY_OF_MONTH, -5);
+        final VersionRule r = new VersionRule();
+        r.setArtifactId(bundle.getId());
+        r.setMode(Mode.STRICT);
+        r.setMessage("foo");
+        r.setEnforceOn(df.format(tomorrow.getTime()));
+
+        final ArtifactRules rules = new ArtifactRules();
+        rules.getBundleVersionRules().add(r);
+
+        ArtifactRules.setArtifactRules(f, rules);
+        final AnalyserTaskContext context = newContext(f);
+        analyser.execute(context);
+
+        final String reportMsg = r.getMessage().concat(" Enforce on: ").concat(r.getEnforceOn());
+        Mockito.verify(context, Mockito.atLeastOnce()).reportArtifactError(Mockito.eq(bundle.getId()), Mockito.eq(reportMsg));
+
+        // test again with date of today
+        r.setEnforceOn(df.format(Calendar.getInstance().getTime()));
+        ArtifactRules.setArtifactRules(f, rules);
+        final AnalyserTaskContext context2 = newContext(f);
+        analyser.execute(context2);
+
+        final String reportMsg2 = r.getMessage().concat(" Enforce on: ").concat(r.getEnforceOn());
+        Mockito.verify(context2, Mockito.atLeastOnce()).reportArtifactError(Mockito.eq(bundle.getId()), Mockito.eq(reportMsg2));
     }
 }

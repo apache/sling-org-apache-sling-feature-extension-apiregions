@@ -16,6 +16,7 @@
  */
 package org.apache.sling.feature.extension.apiregions.analyser;
 
+import java.util.Calendar;
 import java.util.List;
 
 import org.apache.sling.feature.ArtifactId;
@@ -51,11 +52,16 @@ public class CheckArtifactRules implements AnalyserTask{
             }
             for(final ArtifactDescriptor desc : context.getFeatureDescriptor().getArtifactDescriptors()) {
                 this.checkArtifact(context, rules.getArtifactVersionRules(), rules.getMode(), desc.getArtifact().getId());
-            }    
+            }
         }
 	}
 
     void checkArtifact(final AnalyserTaskContext context, final List<VersionRule> rules, final Mode defaultMode, final ArtifactId id) {
+        final Calendar now = Calendar.getInstance();
+        now.set(Calendar.HOUR_OF_DAY, 1);
+        now.set(Calendar.MINUTE, 0);
+        now.set(Calendar.SECOND, 0);
+        now.set(Calendar.MILLISECOND, 0);
         for(final VersionRule rule : rules) {
             if ( rule.getArtifactId() != null && rule.getArtifactId().isSame(id)) {
                 if ( ! rule.isAllowed(id.getOSGiVersion())) {
@@ -63,11 +69,15 @@ public class CheckArtifactRules implements AnalyserTask{
                     if ( msg == null ) {
                         msg = "Artifact with version " + id.getVersion() + " is not allowed.";
                     }
+                    if ( rule.getEnforceOn() != null ) {
+                        msg = msg.concat(" Enforce on: " + rule.getEnforceOn());
+                    }
+                    final boolean enforce = !rule.getEnforceOnDate().after(now);
                     Mode m = defaultMode;
                     if ( rule.getMode() != null ) {
                         m = rule.getMode();
                     }
-                    if ( m == Mode.LENIENT ) {
+                    if ( m == Mode.LENIENT || !enforce) {
                         context.reportArtifactWarning(id, msg);
                     } else {
                         context.reportArtifactError(id, msg);
