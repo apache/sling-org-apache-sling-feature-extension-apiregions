@@ -117,7 +117,15 @@ public class ConfigurationValidator {
                         setResult(result, validationMode, desc, "Factory configuration is not allowed");
                         markGlobalProperties(config, result, region);
                     } else {
-                        validateProperties(config, desc, result.getPropertyResults(), region, validationMode);
+                        // check for internal mode
+                        final FactoryConfigurationDescription fcd = (FactoryConfigurationDescription) desc;
+                        if (fcd.getInternalMode() != null
+                                && fcd.getInternalNames().contains(config.getName())) {
+                            validateProperties(
+                                    config, desc, result.getPropertyResults(), region, fcd.getInternalMode());
+                        } else {
+                            validateProperties(config, desc, result.getPropertyResults(), region, validationMode);
+                        }
                     }
                 }
             }
@@ -185,13 +193,21 @@ public class ConfigurationValidator {
             final Map<String, PropertyValidationResult> results,
             final Region region,
             final Mode mode) {
+        final boolean isInternalFactoryConfig = (desc instanceof FactoryConfigurationDescription)
+                && ((FactoryConfigurationDescription) desc).getInternalNames().contains(configuration.getName());
         final Dictionary<String, Object> properties = configuration.getConfigurationProperties();
 
         // validate the described properties
         for (final Map.Entry<String, PropertyDescription> propEntry :
                 desc.getPropertyDescriptions().entrySet()) {
             final Object value = properties.get(propEntry.getKey());
-            final PropertyValidationResult result = propertyValidator.validate(value, propEntry.getValue(), mode);
+            final Mode propMode;
+            if (isInternalFactoryConfig && propEntry.getValue().getInternalMode() != null) {
+                propMode = propEntry.getValue().getInternalMode();
+            } else {
+                propMode = mode;
+            }
+            final PropertyValidationResult result = propertyValidator.validate(value, propEntry.getValue(), propMode);
             results.put(propEntry.getKey(), result);
         }
 
