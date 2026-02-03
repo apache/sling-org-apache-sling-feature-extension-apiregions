@@ -321,7 +321,7 @@ public class VersionRule extends AttributeableEntity {
      * Set the enforce on information. This must be a date in the format 'YYYY-MM-DD'.
      * @param enforceOn The new info or {@code null} to remove it
      * @since 2.1.0
-     * @throw IllegalArgumentException If the format is not correct
+     * @throws IllegalArgumentException If the format is not correct
      */
     public void setEnforceOn(final String enforceOn) {
         if (enforceOn == null || parseDate(enforceOn) != null) {
