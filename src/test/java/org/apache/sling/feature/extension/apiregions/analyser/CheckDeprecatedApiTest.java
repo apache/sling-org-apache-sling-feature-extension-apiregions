@@ -18,22 +18,42 @@
  */
 package org.apache.sling.feature.extension.apiregions.analyser;
 
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.jar.Manifest;
 
+import org.apache.sling.feature.Artifact;
+import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.Extension;
+import org.apache.sling.feature.ExtensionState;
+import org.apache.sling.feature.ExtensionType;
+import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
 import org.apache.sling.feature.extension.apiregions.api.ApiExport;
 import org.apache.sling.feature.extension.apiregions.api.ApiRegion;
 import org.apache.sling.feature.extension.apiregions.api.ApiRegions;
 import org.apache.sling.feature.extension.apiregions.api.DeprecationInfo;
+import org.apache.sling.feature.scanner.BundleDescriptor;
+import org.apache.sling.feature.scanner.FeatureDescriptor;
+import org.apache.sling.feature.scanner.PackageInfo;
+import org.apache.sling.feature.scanner.impl.FeatureDescriptorImpl;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.never;
 
 public class CheckDeprecatedApiTest {
+
+    private static final String API_REGIONS_JSON = "[{\"name\":\"global\",\"feature-origins\":[\"g:feature:1\"],"
+            + "\"exports\":[{\"name\":\"org.foo.deprecated\",\"deprecated\":\"deprecated\"}]}]";
 
     @Test
     public void testIsInAllowedRegion() {
@@ -91,5 +111,87 @@ public class CheckDeprecatedApiTest {
         assertEquals(
                 e1.getDeprecation().getPackageInfo().getMessage(),
                 exp.getDeprecation().getPackageInfo().getMessage());
+    }
+
+    @Test
+    public void testOptionalImportIgnoredByDefault() throws Exception {
+        final CheckDeprecatedApi analyser = new CheckDeprecatedApi();
+        final AnalyserTaskContext ctx = createContext(Collections.emptyMap(), true);
+
+        analyser.execute(ctx);
+
+        Mockito.verify(ctx, never()).reportArtifactWarning(Mockito.any(), Mockito.anyString());
+        Mockito.verify(ctx, never()).reportArtifactError(Mockito.any(), Mockito.anyString());
+    }
+
+    @Test
+    public void testOptionalImportReportedWhenEnabled() throws Exception {
+        final CheckDeprecatedApi analyser = new CheckDeprecatedApi();
+        final Map<String, String> cfg = new HashMap<>();
+        cfg.put("check-optional-imports", "true");
+        final AnalyserTaskContext ctx = createContext(cfg, true);
+
+        analyser.execute(ctx);
+
+        Mockito.verify(ctx)
+                .reportArtifactWarning(
+                        Mockito.eq(ArtifactId.fromMvnId("g:b:1.0.0")), Mockito.contains("org.foo.deprecated"));
+    }
+
+    private AnalyserTaskContext createContext(final Map<String, String> config, final boolean optionalImport) {
+        final Feature feature = new Feature(ArtifactId.fromMvnId("g:feature:1"));
+        final Extension extension =
+                new Extension(ExtensionType.JSON, ApiRegions.EXTENSION_NAME, ExtensionState.OPTIONAL);
+        extension.setJSON(API_REGIONS_JSON);
+        feature.getExtensions().add(extension);
+
+        final FeatureDescriptor fd = new FeatureDescriptorImpl(feature);
+
+        final Artifact bundle = new Artifact(ArtifactId.fromMvnId("g:b:1.0.0"));
+        bundle.setFeatureOrigins(feature.getId());
+        final BundleDescriptor bd = new TestBundleDescriptor(bundle);
+        bd.getImportedPackages()
+                .add(new PackageInfo("org.foo.deprecated", "1.0", optionalImport, Collections.emptySet()));
+        fd.getBundleDescriptors().add(bd);
+
+        final AnalyserTaskContext ctx = Mockito.mock(AnalyserTaskContext.class);
+        Mockito.when(ctx.getFeature()).thenReturn(feature);
+        Mockito.when(ctx.getFeatureDescriptor()).thenReturn(fd);
+        Mockito.when(ctx.getConfiguration()).thenReturn(config);
+        return ctx;
+    }
+
+    private static final class TestBundleDescriptor extends BundleDescriptor {
+        private final Artifact artifact;
+
+        TestBundleDescriptor(final Artifact artifact) {
+            super(artifact.getId().toMvnId());
+            this.artifact = artifact;
+        }
+
+        @Override
+        public URL getArtifactFile() {
+            return null;
+        }
+
+        @Override
+        public Artifact getArtifact() {
+            return artifact;
+        }
+
+        @Override
+        public Manifest getManifest() {
+            return null;
+        }
+
+        @Override
+        public String getBundleVersion() {
+            return null;
+        }
+
+        @Override
+        public String getBundleSymbolicName() {
+            return null;
+        }
     }
 }

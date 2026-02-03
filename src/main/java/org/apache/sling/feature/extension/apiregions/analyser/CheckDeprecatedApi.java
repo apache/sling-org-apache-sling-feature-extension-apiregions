@@ -47,6 +47,8 @@ public class CheckDeprecatedApi implements AnalyserTask {
 
     private static final String CFG_REMOVAL_PERIOD = "removal-period";
 
+    private static final String CFG_CHECK_OPTIONAL_IMPORTS = "check-optional-imports";
+
     private static final String PROP_VERSION = "version";
 
     @Override
@@ -70,13 +72,15 @@ public class CheckDeprecatedApi implements AnalyserTask {
                     Boolean.parseBoolean(context.getConfiguration().getOrDefault(CFG_STRICT, "false"));
             final Integer removalPeriod =
                     Integer.parseInt(context.getConfiguration().getOrDefault(CFG_REMOVAL_PERIOD, "-1"));
+            final boolean checkOptionalImports =
+                    Boolean.parseBoolean(context.getConfiguration().getOrDefault(CFG_CHECK_OPTIONAL_IMPORTS, "false"));
             final String regionNames = context.getConfiguration().getOrDefault(CFG_REGIONS, ApiRegion.GLOBAL);
             for (final String r : regionNames.split(",")) {
                 final ApiRegion region = regions.getRegionByName(r.trim());
                 if (region == null) {
                     context.reportExtensionError(ApiRegions.EXTENSION_NAME, "Region not found:" + r.trim());
                 } else {
-                    checkBundlesForRegion(context, region, bundleRegions, strict, removalPeriod);
+                    checkBundlesForRegion(context, region, bundleRegions, strict, removalPeriod, checkOptionalImports);
                 }
             }
         }
@@ -96,7 +100,8 @@ public class CheckDeprecatedApi implements AnalyserTask {
             final ApiRegion region,
             final Map<BundleDescriptor, Set<String>> bundleRegions,
             final boolean strict,
-            final int removalPeriod) {
+            final int removalPeriod,
+            final boolean checkOptionalImports) {
         final Calendar checkDate;
         if (removalPeriod > 0) {
             checkDate = Calendar.getInstance();
@@ -114,6 +119,9 @@ public class CheckDeprecatedApi implements AnalyserTask {
         for (final BundleDescriptor bd : context.getFeatureDescriptor().getBundleDescriptors()) {
             if (isInAllowedRegion(bundleRegions.get(bd), region.getName(), allowedNames)) {
                 for (final PackageInfo pi : bd.getImportedPackages()) {
+                    if (!checkOptionalImports && pi.isOptional()) {
+                        continue;
+                    }
                     final VersionRange importRange = pi.getPackageVersionRange();
                     DeprecationInfo deprecationInfo = null;
                     for (final ApiExport exp : exports) {
