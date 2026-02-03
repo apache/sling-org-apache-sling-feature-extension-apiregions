@@ -77,6 +77,11 @@ public class PropertyDescription extends DescribableEntity {
     private Mode mode;
 
     /**
+     * The internal mode.
+     */
+    private Mode internalMode;
+
+    /**
      * The placeholder policy
      * @since 1.3
      */
@@ -117,6 +122,7 @@ public class PropertyDescription extends DescribableEntity {
         this.setRegex(null);
         this.setDefaultValue(null);
         this.setMode(null);
+        this.setInternalMode(null);
     }
 
     /**
@@ -177,6 +183,10 @@ public class PropertyDescription extends DescribableEntity {
             final String modeVal = this.getString(InternalConstants.KEY_MODE);
             if (modeVal != null) {
                 this.setMode(Mode.valueOf(modeVal.toUpperCase()));
+            }
+            final String internalModeVal = this.getString(InternalConstants.KEY_INTERNAL_MODE);
+            if (internalModeVal != null) {
+                this.setInternalMode(Mode.valueOf(internalModeVal.toUpperCase()));
             }
             final String policyVal = this.getString(InternalConstants.KEY_PLACEHOLDER_POLICY);
             if (policyVal != null) {
@@ -240,6 +250,10 @@ public class PropertyDescription extends DescribableEntity {
         }
         if (this.getMode() != null) {
             objectBuilder.add(InternalConstants.KEY_MODE, this.getMode().name());
+        }
+        if (this.getInternalMode() != null) {
+            objectBuilder.add(
+                    InternalConstants.KEY_INTERNAL_MODE, this.getInternalMode().name());
         }
         if (this.getPlaceholderPolicy() != PlaceholderPolicy.DEFAULT) {
             objectBuilder.add(
@@ -450,6 +464,22 @@ public class PropertyDescription extends DescribableEntity {
      */
     public void setMode(final Mode value) {
         this.mode = value;
+    }
+
+    /**
+     * Get the internal mode.
+     * @return The internal mode or {@code null}
+     */
+    public Mode getInternalMode() {
+        return this.internalMode;
+    }
+
+    /**
+     * Set the internal mode
+     * @param value The internal mode
+     */
+    public void setInternalMode(final Mode value) {
+        this.internalMode = value;
     }
 
     /**

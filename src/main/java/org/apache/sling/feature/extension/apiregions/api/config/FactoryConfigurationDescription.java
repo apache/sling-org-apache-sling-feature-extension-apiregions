@@ -41,6 +41,8 @@ public class FactoryConfigurationDescription extends ConfigurableEntity {
 
     private final List<String> internalNames = new ArrayList<>();
 
+    private Mode internalMode;
+
     public FactoryConfigurationDescription() {
         this.setDefaults();
     }
@@ -58,6 +60,7 @@ public class FactoryConfigurationDescription extends ConfigurableEntity {
     public void clear() {
         super.clear();
         this.internalNames.clear();
+        this.internalMode = null;
     }
 
     /**
@@ -91,6 +94,11 @@ public class FactoryConfigurationDescription extends ConfigurableEntity {
                 }
             }
 
+            final String internalModeVal = this.getString(InternalConstants.KEY_INTERNAL_MODE);
+            if (internalModeVal != null) {
+                this.setInternalMode(Mode.valueOf(internalModeVal.toUpperCase()));
+            }
+
         } catch (final JsonException | IllegalArgumentException e) {
             throw new IOException(e);
         }
@@ -110,6 +118,22 @@ public class FactoryConfigurationDescription extends ConfigurableEntity {
      */
     public List<String> getInternalNames() {
         return internalNames;
+    }
+
+    /**
+     * Get the internal mode
+     * @return The internal mode
+     */
+    public Mode getInternalMode() {
+        return internalMode;
+    }
+
+    /**
+     * Set the internal mode
+     * @param internalMode The internal mode
+     */
+    public void setInternalMode(final Mode internalMode) {
+        this.internalMode = internalMode;
     }
 
     /**
@@ -135,6 +159,10 @@ public class FactoryConfigurationDescription extends ConfigurableEntity {
                 arrayBuilder.add(n);
             }
             objBuilder.add(InternalConstants.KEY_INTERNAL_NAMES, arrayBuilder);
+        }
+        if (this.getInternalMode() != null) {
+            objBuilder.add(
+                    InternalConstants.KEY_INTERNAL_MODE, this.getInternalMode().name());
         }
         return objBuilder;
     }
