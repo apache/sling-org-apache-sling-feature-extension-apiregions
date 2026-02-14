@@ -18,15 +18,18 @@
  */
 package org.apache.sling.feature.extension.apiregions.analyser;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.analyser.task.AnalyserTask;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
 import org.apache.sling.feature.extension.apiregions.api.ApiExport;
@@ -48,8 +51,6 @@ public class CheckDeprecatedApi implements AnalyserTask {
     private static final String CFG_REMOVAL_PERIOD = "removal-period";
 
     private static final String CFG_CHECK_OPTIONAL_IMPORTS = "check-optional-imports";
-
-    private static final String PROP_VERSION = "version";
 
     @Override
     public String getId() {
@@ -112,7 +113,8 @@ public class CheckDeprecatedApi implements AnalyserTask {
             checkDate = null;
         }
 
-        final Set<ApiExport> exports = this.calculateDeprecatedPackages(region, bundleRegions);
+        final Map<String, DeprecatedPackage> deprecatedPackages =
+                this.calculateDeprecatedPackages(region, bundleRegions);
 
         final Set<String> allowedNames = getAllowedRegions(region);
 
@@ -122,16 +124,10 @@ public class CheckDeprecatedApi implements AnalyserTask {
                     if (!checkOptionalImports && pi.isOptional()) {
                         continue;
                     }
-                    final VersionRange importRange = pi.getPackageVersionRange();
                     DeprecationInfo deprecationInfo = null;
-                    for (final ApiExport exp : exports) {
-                        if (pi.getName().equals(exp.getName())) {
-                            String version = exp.getProperties().get(PROP_VERSION);
-                            if (version == null || importRange == null || importRange.includes(new Version(version))) {
-                                deprecationInfo = exp.getDeprecation().getPackageInfo();
-                                break;
-                            }
-                        }
+                    final DeprecatedPackage deprecatedPackage = deprecatedPackages.get(pi.getName());
+                    if (deprecatedPackage != null) {
+                        deprecationInfo = deprecatedPackage.isDeprecated(pi);
                     }
                     if (deprecationInfo != null) {
                         String msg = "Usage of deprecated package found : "
@@ -199,41 +195,45 @@ public class CheckDeprecatedApi implements AnalyserTask {
         return allowedNames;
     }
 
-    Set<ApiExport> calculateDeprecatedPackages(
+    Map<String, DeprecatedPackage> calculateDeprecatedPackages(
             final ApiRegion region, final Map<BundleDescriptor, Set<String>> bundleRegions) {
-        final Set<ApiExport> result = new LinkedHashSet<>();
-        for (final ApiExport export : region.listAllExports()) {
-            if (export.getDeprecation().getPackageInfo() != null) {
-                final String version = getVersion(bundleRegions, region.getName(), export.getName());
-                // create new ApiExport to add version
-                final ApiExport clone = new ApiExport(export.getName());
-                clone.getDeprecation().setPackageInfo(export.getDeprecation().getPackageInfo());
-                if (version != null) {
-                    clone.getProperties().put(PROP_VERSION, version);
+        final Map<String, DeprecatedPackage> result = new HashMap<>();
+        ApiRegion current = region;
+        while (current != null) {
+            for (final ApiExport export : current.listExports()) {
+                if (export.getDeprecation().getPackageInfo() != null && !result.containsKey(export.getName())) {
+                    final DeprecatedPackage pck = getDeprecatedPackage(bundleRegions, current, export);
+                    result.put(export.getName(), pck);
                 }
-                result.add(clone);
             }
+            current = current.getParent();
         }
         return result;
     }
 
-    String getVersion(
-            final Map<BundleDescriptor, Set<String>> bundleRegions, final String regionName, final String packageName) {
-        String version = null;
+    DeprecatedPackage getDeprecatedPackage(
+            final Map<BundleDescriptor, Set<String>> bundleRegions, final ApiRegion region, final ApiExport export) {
+        final List<PackageInfo> deprecatedList = new ArrayList<>();
+        final List<PackageInfo> nonDeprecatedList = new ArrayList<>();
+
+        final ArtifactId[] regionOrigins = region.getFeatureOrigins();
+
         for (final Map.Entry<BundleDescriptor, Set<String>> entry : bundleRegions.entrySet()) {
-            if (entry.getValue().contains(regionName)) {
+            final ArtifactId[] bundleOrigins = entry.getKey().getArtifact().getFeatureOrigins();
+            if (entry.getValue().contains(region.getName())) {
                 for (final PackageInfo info : entry.getKey().getExportedPackages()) {
-                    if (info.getName().equals(packageName)) {
-                        version = info.getVersion();
-                        break;
+                    if (info.getName().equals(export.getName())) {
+                        if (regionOrigins.length == 0
+                                || (bundleOrigins.length > 0 && bundleOrigins[0].isSame(regionOrigins[0]))) {
+                            deprecatedList.add(info);
+                        } else {
+                            nonDeprecatedList.add(info);
+                        }
                     }
-                }
-                if (version != null) {
-                    break;
                 }
             }
         }
-        return version;
+        return new DeprecatedPackage(export.getDeprecation().getPackageInfo(), deprecatedList, nonDeprecatedList);
     }
 
     private Set<String> getBundleRegions(final BundleDescriptor info, final ApiRegions regions) {
@@ -242,5 +242,60 @@ public class CheckDeprecatedApi implements AnalyserTask {
                 .flatMap(Stream::of)
                 .map(ApiRegion::getName)
                 .collect(Collectors.toSet());
+    }
+
+    /**
+     * Represents a deprecated package with its deprecation information and package versions.
+     */
+    static final class DeprecatedPackage {
+        private final DeprecationInfo deprecationInfo;
+        private final List<PackageInfo> deprecatedList;
+        private final List<PackageInfo> nonDeprecatedList;
+
+        public DeprecationInfo getDeprecationInfo() {
+            return deprecationInfo;
+        }
+
+        /**
+         * Constructs a DeprecatedPackage with deprecation info and lists of package versions.
+         *
+         * @param deprecationInfo the deprecation information for this package
+         * @param deprecatedList list of deprecated package versions
+         * @param nonDeprecatedList list of non-deprecated package versions
+         */
+        public DeprecatedPackage(
+                final DeprecationInfo deprecationInfo,
+                final List<PackageInfo> deprecatedList,
+                final List<PackageInfo> nonDeprecatedList) {
+            this.deprecationInfo = deprecationInfo;
+            this.deprecatedList = deprecatedList;
+            this.nonDeprecatedList = nonDeprecatedList;
+        }
+
+        /**
+         * Checks if the given package info is deprecated.
+         *
+         * @param pi the package info to check
+         * @return the deprecation info if the package is deprecated, null otherwise
+         */
+        public DeprecationInfo isDeprecated(final PackageInfo pi) {
+            final VersionRange importVersion = pi.getVersion() != null ? pi.getPackageVersionRange() : null;
+            // check non deprecated list first
+            for (final PackageInfo nonDeprecated : nonDeprecatedList) {
+                final Version exportVersion = nonDeprecated.getPackageVersion();
+                if (exportVersion == null || importVersion == null || importVersion.includes(exportVersion)) {
+                    return null;
+                }
+            }
+            // check deprecated list
+            for (final PackageInfo deprecated : deprecatedList) {
+                final Version exportVersion = deprecated.getPackageVersion();
+                if (exportVersion == null || importVersion == null || importVersion.includes(exportVersion)) {
+                    return deprecationInfo;
+                }
+            }
+            // not found, do not report
+            return null;
+        }
     }
 }
