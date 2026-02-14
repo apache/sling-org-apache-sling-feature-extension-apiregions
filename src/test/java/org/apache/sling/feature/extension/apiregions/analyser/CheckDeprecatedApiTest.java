@@ -280,6 +280,57 @@ public class CheckDeprecatedApiTest {
                         Mockito.eq(ArtifactId.fromMvnId("g:importer2:1.0.0")), Mockito.contains("org.foo.deprecated"));
     }
 
+    @Test
+    public void testDeprecatedExportFromOtherFeatureDoesNotTriggerWarning() throws Exception {
+        final Feature feature = new Feature(ArtifactId.fromMvnId("g:feature:1"));
+        final Extension extension =
+                new Extension(ExtensionType.JSON, ApiRegions.EXTENSION_NAME, ExtensionState.OPTIONAL);
+        extension.setJSON(API_REGIONS_JSON);
+        feature.getExtensions().add(extension);
+
+        final FeatureDescriptor fd = new FeatureDescriptorImpl(feature);
+
+        // Importer bundle belonging to the current feature, importing only the newer (non-deprecated) version
+        final Artifact importBundle = new Artifact(ArtifactId.fromMvnId("g:importer:1.0.0"));
+        importBundle.setFeatureOrigins(feature.getId());
+        final BundleDescriptor importBd = new TestBundleDescriptor(importBundle);
+        importBd
+                .getImportedPackages()
+                .add(new PackageInfo("org.foo.deprecated", "[3.0.0,4.0.0)", false, Collections.emptySet()));
+        fd.getBundleDescriptors().add(importBd);
+
+        // Deprecated export coming from the current feature
+        final Artifact deprecatedExportBundle =
+                new Artifact(ArtifactId.fromMvnId("g:deprecated-exporter:1.0.0"));
+        deprecatedExportBundle.setFeatureOrigins(feature.getId());
+        final BundleDescriptor deprecatedExportBd = new TestBundleDescriptor(deprecatedExportBundle);
+        deprecatedExportBd
+                .getExportedPackages()
+                .add(new PackageInfo("org.foo.deprecated", "1.0.0", false, Collections.emptySet()));
+        fd.getBundleDescriptors().add(deprecatedExportBd);
+
+        // Non-deprecated export coming from a different feature
+        final Artifact otherFeatureExportBundle =
+                new Artifact(ArtifactId.fromMvnId("g:other-exporter:1.0.0"));
+        otherFeatureExportBundle.setFeatureOrigins(ArtifactId.fromMvnId("g:otherfeature:1"));
+        final BundleDescriptor otherFeatureExportBd = new TestBundleDescriptor(otherFeatureExportBundle);
+        otherFeatureExportBd
+                .getExportedPackages()
+                .add(new PackageInfo("org.foo.deprecated", "3.0.0", false, Collections.emptySet()));
+        fd.getBundleDescriptors().add(otherFeatureExportBd);
+
+        final AnalyserTaskContext ctx = Mockito.mock(AnalyserTaskContext.class);
+        Mockito.when(ctx.getFeature()).thenReturn(feature);
+        Mockito.when(ctx.getFeatureDescriptor()).thenReturn(fd);
+        Mockito.when(ctx.getConfiguration()).thenReturn(Collections.emptyMap());
+
+        analyser.execute(ctx);
+
+        // The importer only matches the non-deprecated 3.0.0 export from the other feature, so it must not be flagged
+        Mockito.verify(ctx, never())
+                .reportArtifactWarning(
+                        Mockito.eq(ArtifactId.fromMvnId("g:importer:1.0.0")), Mockito.anyString());
+    }
     private AnalyserTaskContext createContext(final Map<String, String> config, final boolean optionalImport) {
         final Feature feature = new Feature(ArtifactId.fromMvnId("g:feature:1"));
         final Extension extension =
