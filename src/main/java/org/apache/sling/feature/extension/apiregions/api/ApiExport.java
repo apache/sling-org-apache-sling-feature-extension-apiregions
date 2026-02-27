@@ -56,9 +56,14 @@ public class ApiExport implements Comparable<ApiExport> {
 
     private static final String PREVIOUS_ARTIFACT_ID_KEY = "previous-artifact-id";
 
+    private static final String LIBRARY_KEY = "library";
+
     private final String name;
 
     private String toggle;
+
+    /** Optional library information */
+    private String library;
 
     /** If the package is behind a toggle, this is the previous artifact containing the package not behind a toggle */
     private ArtifactId previousArtifactId;
@@ -142,6 +147,24 @@ public class ApiExport implements Comparable<ApiExport> {
      */
     public Deprecation getDeprecation() {
         return this.deprecation;
+    }
+
+    /**
+     * Get the optional library information.
+     * @return The library or {@code null}
+     * @since 2.1.0
+     */
+    public String getLibrary() {
+        return library;
+    }
+
+    /**
+     * Set the library information.
+     * @param value The library
+     * @since 2.1.0
+     */
+    public void setLibrary(final String value) {
+        this.library = value;
     }
 
     /**
@@ -310,6 +333,10 @@ public class ApiExport implements Comparable<ApiExport> {
             expBuilder.add(DEPRECATED_KEY, depValue);
         }
 
+        if (this.getLibrary() != null) {
+            expBuilder.add(LIBRARY_KEY, this.getLibrary());
+        }
+
         for (final Map.Entry<String, String> entry : this.getProperties().entrySet()) {
             expBuilder.add(entry.getKey(), entry.getValue());
         }
@@ -355,6 +382,9 @@ public class ApiExport implements Comparable<ApiExport> {
                     final JsonValue dValue = expObj.get(DEPRECATED_KEY);
                     export.parseDeprecation(dValue);
 
+                } else if (LIBRARY_KEY.equals(key)) {
+                    export.setLibrary(expObj.getString(key));
+
                     // everything else is stored as a string property
                 } else {
                     export.getProperties().put(key, expObj.getString(key));
@@ -375,12 +405,12 @@ public class ApiExport implements Comparable<ApiExport> {
     @Override
     public String toString() {
         return "ApiExport [name=" + name + ", toggle=" + toggle + ", previousArtifactId=" + previousArtifactId
-                + ", properties=" + properties + "]";
+                + ", library=" + library + ", properties=" + properties + "]";
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(deprecation, name, previousArtifactId, properties, toggle);
+        return Objects.hash(deprecation, name, previousArtifactId, properties, toggle, library);
     }
 
     @Override
@@ -399,6 +429,7 @@ public class ApiExport implements Comparable<ApiExport> {
                 && Objects.equals(name, other.name)
                 && Objects.equals(previousArtifactId, other.previousArtifactId)
                 && Objects.equals(properties, other.properties)
+                && Objects.equals(library, other.library)
                 && Objects.equals(toggle, other.toggle);
     }
 }

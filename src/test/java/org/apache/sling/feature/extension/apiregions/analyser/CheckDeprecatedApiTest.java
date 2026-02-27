@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.jar.Manifest;
@@ -356,6 +357,63 @@ public class CheckDeprecatedApiTest {
         Mockito.when(ctx.getFeatureDescriptor()).thenReturn(fd);
         Mockito.when(ctx.getConfiguration()).thenReturn(config);
         return ctx;
+    }
+
+    @Test
+    public void testLibraryGrouping() throws Exception {
+        final CheckDeprecatedApi analyser = new CheckDeprecatedApi();
+
+        final Feature feature = new Feature(ArtifactId.fromMvnId("g:feature:1"));
+        final Extension extension =
+                new Extension(ExtensionType.JSON, ApiRegions.EXTENSION_NAME, ExtensionState.OPTIONAL);
+        extension.setJSON("[{\"name\":\"global\",\"feature-origins\":[\"g:feature:1\"],"
+                + "\"exports\":["
+                + "{\"name\":\"org.foo.a\",\"deprecated\":{\"msg\":\"deprecated a\"},\"library\":\"com.example:lib:1\"},"
+                + "{\"name\":\"org.foo.b\",\"deprecated\":{\"msg\":\"deprecated b\"},\"library\":\"com.example:lib:1\"},"
+                + "{\"name\":\"org.foo.c\",\"deprecated\":\"deprecated c\"}"
+                + "]}]");
+        feature.getExtensions().add(extension);
+
+        final FeatureDescriptor fd = new FeatureDescriptorImpl(feature);
+
+        // API bundles exporting the packages
+        final Artifact apiBundle = new Artifact(ArtifactId.fromMvnId("g:api:1.0.0"));
+        apiBundle.setFeatureOrigins(feature.getId());
+        final BundleDescriptor apiDesc = new TestBundleDescriptor(apiBundle);
+        apiDesc.getExportedPackages().add(new PackageInfo("org.foo.a", "1.0", false, Collections.emptySet()));
+        apiDesc.getExportedPackages().add(new PackageInfo("org.foo.b", "1.0", false, Collections.emptySet()));
+        apiDesc.getExportedPackages().add(new PackageInfo("org.foo.c", "1.0", false, Collections.emptySet()));
+        fd.getBundleDescriptors().add(apiDesc);
+
+        // Importer bundle importing all three packages
+        final Artifact importBundle = new Artifact(ArtifactId.fromMvnId("g:importer:1.0.0"));
+        importBundle.setFeatureOrigins(feature.getId());
+        final BundleDescriptor importBd = new TestBundleDescriptor(importBundle);
+        importBd.getImportedPackages().add(new PackageInfo("org.foo.a", "1.0", false, Collections.emptySet()));
+        importBd.getImportedPackages().add(new PackageInfo("org.foo.b", "1.0", false, Collections.emptySet()));
+        importBd.getImportedPackages().add(new PackageInfo("org.foo.c", "1.0", false, Collections.emptySet()));
+        fd.getBundleDescriptors().add(importBd);
+
+        final AnalyserTaskContext ctx = Mockito.mock(AnalyserTaskContext.class);
+        Mockito.when(ctx.getFeature()).thenReturn(feature);
+        Mockito.when(ctx.getFeatureDescriptor()).thenReturn(fd);
+        Mockito.when(ctx.getConfiguration()).thenReturn(Collections.emptyMap());
+
+        analyser.execute(ctx);
+
+        final ArtifactId importerId = ArtifactId.fromMvnId("g:importer:1.0.0");
+
+        // Exactly two warnings total for this bundle (one grouped, one individual)
+        final org.mockito.ArgumentCaptor<String> msgCaptor = org.mockito.ArgumentCaptor.forClass(String.class);
+        Mockito.verify(ctx, Mockito.times(2)).reportArtifactWarning(Mockito.eq(importerId), msgCaptor.capture());
+        Mockito.verify(ctx, never()).reportArtifactError(Mockito.any(), Mockito.anyString());
+
+        final List<String> msgs = msgCaptor.getAllValues();
+        // one message must contain the library name and both package names
+        assertTrue(msgs.stream()
+                .anyMatch(m -> m.contains("com.example:lib:1") && m.contains("org.foo.a") && m.contains("org.foo.b")));
+        // one message must contain the individual package name without library grouping prefix
+        assertTrue(msgs.stream().anyMatch(m -> m.contains("org.foo.c") && !m.contains("com.example:lib:1")));
     }
 
     private static final class TestBundleDescriptor extends BundleDescriptor {

@@ -40,7 +40,6 @@ public class CheckApiRegionsDuplicatesTest extends AbstractApiRegionsAnalyserTas
 
         assertFalse(errors.isEmpty());
         assertEquals(1, errors.size());
-        System.out.println(errors);
         assertTrue(
                 errors.iterator()
                         .next()

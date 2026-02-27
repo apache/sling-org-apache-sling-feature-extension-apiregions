@@ -26,6 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -120,6 +121,10 @@ public class CheckDeprecatedApi implements AnalyserTask {
 
         for (final BundleDescriptor bd : context.getFeatureDescriptor().getBundleDescriptors()) {
             if (isInAllowedRegion(bundleRegions.get(bd), region.getName(), allowedNames)) {
+                // Collect all deprecation findings, grouped by library (null = no library)
+                final Map<String, String> libraryErrors = new TreeMap<>();
+                final Map<String, String> libraryWarnings = new TreeMap<>();
+
                 for (final PackageInfo pi : bd.getImportedPackages()) {
                     if (!checkOptionalImports && pi.isOptional()) {
                         continue;
@@ -130,18 +135,29 @@ public class CheckDeprecatedApi implements AnalyserTask {
                         deprecationInfo = deprecatedPackage.isDeprecated(pi);
                     }
                     if (deprecationInfo != null) {
-                        String msg = "Usage of deprecated package found : "
-                                .concat(pi.getName())
-                                .concat(" : ")
-                                .concat(deprecationInfo.getMessage());
-                        if (deprecationInfo.getSince() != null) {
-                            msg = msg.concat(" Deprecated since ").concat(deprecationInfo.getSince());
-                        }
                         boolean isError;
                         if (deprecationInfo.getMode() != null) {
                             isError = deprecationInfo.getMode() == DeprecationValidationMode.STRICT;
                         } else {
                             isError = strict;
+                        }
+                        String msg;
+                        final String library = deprecatedPackage.getExport().getLibrary();
+                        if (library != null) {
+                            msg = "Usage of deprecated library found : "
+                                    .concat(library)
+                                    .concat(", package(s) : <start>");
+                        } else {
+                            msg = "Usage of deprecated package found : ";
+                        }
+                        msg = msg.concat(pi.getName());
+                        if (library != null) {
+                            msg = msg.concat("<end>");
+                        }
+                        msg = msg.concat(" : ").concat(deprecationInfo.getMessage());
+
+                        if (deprecationInfo.getSince() != null) {
+                            msg = msg.concat(" Deprecated since ").concat(deprecationInfo.getSince());
                         }
                         if (deprecationInfo.isForRemoval()) {
                             boolean printRemoval = true;
@@ -160,12 +176,37 @@ public class CheckDeprecatedApi implements AnalyserTask {
                                 msg = msg.concat(" For removal : ").concat(deprecationInfo.getForRemoval());
                             }
                         }
-                        if (isError) {
-                            context.reportArtifactError(bd.getArtifact().getId(), msg);
+                        if (library != null) {
+                            final Map<String, String> target = isError ? libraryErrors : libraryWarnings;
+                            // check if entry exists for library
+                            String entry = target.get(library);
+                            if (entry == null) {
+                                entry = msg;
+                            } else {
+                                entry = entry.replace(
+                                        "<end>", ", ".concat(pi.getName()).concat("<end>"));
+                            }
+                            target.put(library, entry);
                         } else {
-                            context.reportArtifactWarning(bd.getArtifact().getId(), msg);
+                            if (isError) {
+                                context.reportArtifactError(bd.getArtifact().getId(), msg);
+                            } else {
+                                context.reportArtifactWarning(bd.getArtifact().getId(), msg);
+                            }
                         }
                     }
+                }
+
+                // Report grouped messages per library
+                for (final String entry : libraryErrors.values()) {
+                    context.reportArtifactError(
+                            bd.getArtifact().getId(),
+                            entry.replace("<start>", "").replace("<end>", ""));
+                }
+                for (final String entry : libraryWarnings.values()) {
+                    context.reportArtifactWarning(
+                            bd.getArtifact().getId(),
+                            entry.replace("<start>", "").replace("<end>", ""));
                 }
             }
         }
@@ -233,7 +274,7 @@ public class CheckDeprecatedApi implements AnalyserTask {
                 }
             }
         }
-        return new DeprecatedPackage(export.getDeprecation().getPackageInfo(), deprecatedList, nonDeprecatedList);
+        return new DeprecatedPackage(export, deprecatedList, nonDeprecatedList);
     }
 
     private Set<String> getBundleRegions(final BundleDescriptor info, final ApiRegions regions) {
@@ -248,12 +289,16 @@ public class CheckDeprecatedApi implements AnalyserTask {
      * Represents a deprecated package with its deprecation information and package versions.
      */
     static final class DeprecatedPackage {
-        private final DeprecationInfo deprecationInfo;
+        private final ApiExport export;
         private final List<PackageInfo> deprecatedList;
         private final List<PackageInfo> nonDeprecatedList;
 
         public DeprecationInfo getDeprecationInfo() {
-            return deprecationInfo;
+            return export.getDeprecation().getPackageInfo();
+        }
+
+        public ApiExport getExport() {
+            return export;
         }
 
         /**
@@ -264,10 +309,10 @@ public class CheckDeprecatedApi implements AnalyserTask {
          * @param nonDeprecatedList list of non-deprecated package versions
          */
         public DeprecatedPackage(
-                final DeprecationInfo deprecationInfo,
+                final ApiExport export,
                 final List<PackageInfo> deprecatedList,
                 final List<PackageInfo> nonDeprecatedList) {
-            this.deprecationInfo = deprecationInfo;
+            this.export = export;
             this.deprecatedList = deprecatedList;
             this.nonDeprecatedList = nonDeprecatedList;
         }
@@ -291,7 +336,7 @@ public class CheckDeprecatedApi implements AnalyserTask {
             for (final PackageInfo deprecated : deprecatedList) {
                 final Version exportVersion = deprecated.getPackageVersion();
                 if (exportVersion == null || importVersion == null || importVersion.includes(exportVersion)) {
-                    return deprecationInfo;
+                    return this.getDeprecationInfo();
                 }
             }
             // not found, do not report
