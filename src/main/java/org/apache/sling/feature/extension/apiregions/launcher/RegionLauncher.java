@@ -75,7 +75,8 @@ public class RegionLauncher extends FrameworkLauncher {
             try {
                 return context.getArtifactFile(id);
             } catch (IOException e) {
-                throw new UncheckedIOException(e);
+                throw new UncheckedIOException(
+                        "Failed to retrieve artifact " + id.toMvnId() + " during API region launcher preparation", e);
             }
         };
 

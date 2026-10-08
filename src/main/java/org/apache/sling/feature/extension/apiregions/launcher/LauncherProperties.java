@@ -71,7 +71,10 @@ public class LauncherProperties {
                             version = manifest.getValue(Constants.BUNDLE_VERSION);
                         }
                     } catch (IOException ex) {
-                        throw new UncheckedIOException(ex);
+                        throw new UncheckedIOException(
+                                "Failed to read manifest from bundle "
+                                        + bundle.getId().toMvnId(),
+                                ex);
                     }
                 }
                 if (bsn != null && version != null) {
