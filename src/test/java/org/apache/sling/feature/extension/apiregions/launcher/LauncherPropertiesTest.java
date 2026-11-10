@@ -110,4 +110,21 @@ public class LauncherPropertiesTest {
         Assert.assertEquals(1, prop.size());
         Assert.assertEquals("my.bundle~1.0.0", prop.get(a.getId().toMvnId()));
     }
+
+    @Test
+    public void testGetBundleIDtoBSNandVersionMapWithAltBsn() {
+        final ArtifactId featureId = ArtifactId.parse("g:f:1");
+        final ArtifactId artifactId = ArtifactId.parse("g:a:2");
+
+        final Feature f = new Feature(featureId);
+        final Artifact a = new Artifact(artifactId);
+        a.getMetadata().put(Constants.BUNDLE_SYMBOLICNAME, "my.bundle");
+        a.getMetadata().put(Constants.BUNDLE_VERSION, "1.0");
+        a.getMetadata().put("bundle:rename-bsn", "alt.bundle");
+        f.getBundles().add(a);
+
+        final Properties prop = LauncherProperties.getBundleIDtoBSNandVersionMap(f, null);
+        Assert.assertEquals(1, prop.size());
+        Assert.assertEquals("alt.bundle~1.0.0", prop.get(a.getId().toMvnId()));
+    }
 }

@@ -56,6 +56,7 @@ public class LauncherProperties {
         for (Artifact bundle : app.getBundles()) {
             final String key = bundle.getId().toMvnId();
             if (result.getProperty(key) == null) {
+                String altBsn = bundle.getMetadata().get("bundle:rename-bsn");
                 String bsn = bundle.getMetadata().get(Constants.BUNDLE_SYMBOLICNAME);
                 String version = bundle.getMetadata().get(Constants.BUNDLE_VERSION);
                 if (bsn == null || version == null) {
@@ -73,6 +74,9 @@ public class LauncherProperties {
                     } catch (IOException ex) {
                         throw new UncheckedIOException(ex);
                     }
+                }
+                if (altBsn != null) {
+                    bsn = altBsn;
                 }
                 if (bsn != null && version != null) {
                     result.setProperty(
