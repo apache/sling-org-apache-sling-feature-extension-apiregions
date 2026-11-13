@@ -34,11 +34,13 @@ import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
 import org.apache.sling.feature.extension.apiregions.api.ApiRegions;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.scanner.FeatureDescriptor;
+import org.apache.sling.feature.scanner.PackageInfo;
 import org.apache.sling.feature.scanner.impl.BundleDescriptorImpl;
 import org.apache.sling.feature.scanner.impl.FeatureDescriptorImpl;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.osgi.framework.Constants;
 
 import static org.junit.Assert.assertEquals;
 
@@ -130,6 +132,68 @@ public class CheckApiRegionsBundleExportsImportsTest {
         Mockito.verify(ctx, Mockito.never()).reportError(Mockito.anyString());
         Mockito.verify(ctx, Mockito.never()).reportWarning(Mockito.anyString());
         Mockito.verify(ctx, Mockito.never()).reportArtifactWarning(Mockito.any(), Mockito.anyString());
+    }
+
+    @Test
+    public void testMissingExportWithBootDelegation() throws Exception {
+        for (String bootDelegation :
+                new String[] {"org.foo.e", "org.foo.*", "org.*", "*", " org.other, , org.foo.e "}) {
+            assertBootDelegation(bootDelegation, false);
+        }
+    }
+
+    @Test
+    public void testMissingExportWithNonMatchingBootDelegation() throws Exception {
+        for (String bootDelegation :
+                new String[] {"", " , ", "org.other", "org.foo.e.*", "org.fo.*", "org.foo", "org.foo.evil", "org.foo.e*"
+                }) {
+            assertBootDelegation(bootDelegation, true);
+        }
+    }
+
+    private void assertBootDelegation(String bootDelegation, boolean missingExport) throws Exception {
+        Feature f = new Feature(ArtifactId.fromMvnId("f:f:1"));
+        f.setComplete(true);
+        f.getFrameworkProperties().put(Constants.FRAMEWORK_BOOTDELEGATION, bootDelegation);
+        FeatureDescriptor fd = new FeatureDescriptorImpl(f);
+        fdAddBundle(fd, "g:b1:1", "test-bundle1.jar");
+        fdAddBundle(fd, "g:b3:1", "test-bundle3.jar");
+
+        AnalyserTaskContext ctx = Mockito.mock(AnalyserTaskContext.class);
+        Mockito.when(ctx.getFeature()).thenReturn(f);
+        Mockito.when(ctx.getFeatureDescriptor()).thenReturn(fd);
+        new CheckApiRegionsBundleExportsImports().execute(ctx);
+
+        Mockito.verify(ctx, Mockito.times(missingExport ? 1 : 0))
+                .reportArtifactError(Mockito.eq(ArtifactId.fromMvnId("g:b3:1")), Mockito.contains("org.foo.e"));
+        Mockito.verify(ctx, Mockito.times(missingExport ? 1 : 0)).reportError(Mockito.anyString());
+        Mockito.verify(ctx, Mockito.never()).reportArtifactWarning(Mockito.any(), Mockito.anyString());
+    }
+
+    @Test
+    public void testBootDelegationWithNonMatchingExportVersion() throws Exception {
+        for (boolean bootDelegation : new boolean[] {false, true}) {
+            Feature f = new Feature(ArtifactId.fromMvnId("f:f:1"));
+            if (bootDelegation) {
+                f.getFrameworkProperties().put(Constants.FRAMEWORK_BOOTDELEGATION, "org.foo.b");
+            }
+            FeatureDescriptor fd = new FeatureDescriptorImpl(f);
+            fdAddBundle(fd, "g:b1:1", "test-bundle1.jar");
+            BundleDescriptor importer = Mockito.mock(
+                    BundleDescriptor.class,
+                    Mockito.withSettings().useConstructor("g:b2:1").defaultAnswer(Mockito.CALLS_REAL_METHODS));
+            Mockito.when(importer.getArtifact()).thenReturn(new Artifact(ArtifactId.fromMvnId("g:b2:1")));
+            importer.getImportedPackages().add(new PackageInfo("org.foo.b", "[99,100)", false, Collections.emptySet()));
+            fd.getBundleDescriptors().add(importer);
+
+            AnalyserTaskContext ctx = Mockito.mock(AnalyserTaskContext.class);
+            Mockito.when(ctx.getFeature()).thenReturn(f);
+            Mockito.when(ctx.getFeatureDescriptor()).thenReturn(fd);
+            new CheckApiRegionsBundleExportsImports().execute(ctx);
+
+            Mockito.verify(ctx, Mockito.times(bootDelegation ? 0 : 1))
+                    .reportArtifactError(Mockito.eq(ArtifactId.fromMvnId("g:b2:1")), Mockito.contains("org.foo.b"));
+        }
     }
 
     @Test

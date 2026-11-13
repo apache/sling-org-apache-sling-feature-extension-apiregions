@@ -28,6 +28,8 @@ in a given feature. If the same package is listed in multiple regions this will 
 
 * `api-regions-exportsimports`: Checks bundle import/export package statements for consistency and completeness. If API Regions are used this analyser includes this
 information as part of the check, to ensure that bundles don't import packages of which they have no visibility because of API Regions restrictions.
+If no matching export is found, imports are checked against the `org.osgi.framework.bootdelegation` framework property,
+supporting exact package names, `package.*` for subpackages, and `*` for all packages.
 
 * `api-regions-check-order`: This analyser checks that regions are defined in the specified
 order and that the same region is only declared once. Later regions inherit the packages

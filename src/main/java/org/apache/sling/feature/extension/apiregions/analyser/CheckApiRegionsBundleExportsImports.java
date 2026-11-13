@@ -38,6 +38,7 @@ import org.apache.sling.feature.extension.apiregions.api.ApiRegion;
 import org.apache.sling.feature.extension.apiregions.api.ApiRegions;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.scanner.PackageInfo;
+import org.osgi.framework.Constants;
 
 public class CheckApiRegionsBundleExportsImports implements AnalyserTask {
 
@@ -78,6 +79,13 @@ public class CheckApiRegionsBundleExportsImports implements AnalyserTask {
         boolean ignoreAPIRegions = ctx.getConfiguration()
                 .getOrDefault(IGNORE_API_REGIONS_CONFIG_KEY, "false")
                 .equalsIgnoreCase("true");
+        final List<String> bootDelegation = Stream.of(ctx.getFeature()
+                        .getFrameworkProperties()
+                        .getOrDefault(Constants.FRAMEWORK_BOOTDELEGATION, "")
+                        .split(","))
+                .map(String::trim)
+                .filter(name -> !name.isEmpty())
+                .collect(Collectors.toList());
 
         final Map<BundleDescriptor, Report> reports = new HashMap<>();
 
@@ -119,6 +127,9 @@ public class CheckApiRegionsBundleExportsImports implements AnalyserTask {
                     final Map<BundleDescriptor, Set<String>> candidates =
                             getCandidates(exportingBundles, pck, info, apiRegions, ignoreAPIRegions);
                     if (candidates.isEmpty()) {
+                        if (isBootDelegated(pck.getName(), bootDelegation)) {
+                            continue;
+                        }
                         if (pck.isOptional()) {
                             getReport(reports, info).missingExportsForOptional.add(pck);
                         } else {
@@ -177,6 +188,9 @@ public class CheckApiRegionsBundleExportsImports implements AnalyserTask {
                         }
 
                         if (matchingCandidates.isEmpty()) {
+                            if (isBootDelegated(pck.getName(), bootDelegation)) {
+                                continue;
+                            }
                             if (pck.isOptional()) {
                                 getReport(reports, info)
                                         .missingExportsForOptional
@@ -234,6 +248,13 @@ public class CheckApiRegionsBundleExportsImports implements AnalyserTask {
         if (errorReported && ctx.getFeature().isComplete()) {
             ctx.reportError(ctx.getFeature().getId().toMvnId() + " is marked as 'complete' but has missing imports.");
         }
+    }
+
+    private boolean isBootDelegated(final String packageName, final List<String> bootDelegation) {
+        return bootDelegation.stream()
+                .anyMatch(name -> name.equals("*")
+                        || name.equals(packageName)
+                        || (name.endsWith(".*") && packageName.startsWith(name.substring(0, name.length() - 1))));
     }
 
     private Set<String> getBundleRegions(BundleDescriptor info, ApiRegions regions, boolean ignoreAPIRegions) {
